@@ -1,0 +1,175 @@
+.form-container {
+    
+}
+
+.form-container .form-item {
+    padding:1.6rem 0;
+    border-bottom:1px solid rgba(255, 255, 255, 0.2);
+    font-size:0.8rem;
+}
+.form-container .form-item:last-child {
+    border-bottom:none;
+}
+.form-item .form-item-title {
+    font-size:1.2rem;
+    margin-bottom:6px;
+}
+.form-item .form-item-title :global(.ant-checkbox-wrapper) {
+    margin-left:6px;
+}
+.form-item .form-item-title :global(.ant-checkbox-wrapper) :global(.ant-checkbox-inner) {
+    width:20px;
+    height:20px;
+}
+/* 自定义日期控件样式 */
+.custom-table{
+    width:100%;
+    background:transparent;
+    border:1px solid rgba(255, 255, 255, 0.2);
+    border-bottom:none;
+    white-space:nowrap;
+}
+.custom-table > thead > tr > th {
+    padding:6px 10px;
+    background:rgba(255, 255, 255, 0.1);
+    border-color:rgba(255, 255, 255, 0.15);
+    color:#fff;
+    font-size:0.8rem;
+    text-align:left;
+}
+.custom-table > tbody > tr > td {
+    padding:6px 10px;
+    border-right:1px solid rgba(255, 255, 255, 0.15);
+    border-bottom:1px solid rgba(255, 255, 255, 0.15);
+    color:#fff;
+    font-size:0.8rem;
+}
+.custom-table > tbody > tr > td:last-child {
+    border-right:none;
+}
+.custom-table > tbody > tr:hover > td {
+    background-color:transparent !important;
+}
+/* 自定义Radio组件样式 */
+.custom-radio:global(.ant-radio-group) :global(.ant-radio-wrapper) {
+    color:#fff;
+}
+.custom-radio:global(.ant-radio-group) :global(.ant-radio-wrapper) :global(.ant-radio-inner){
+    box-shadow:none;
+}
+/* 自定义RangePicker组件样式 */
+.custom-date-picker:global(.ant-picker) {
+    background:transparent;
+    border-color:#03a4fe;
+    color:#fff;
+}
+.custom-date-picker:global(.ant-picker) :global(.ant-picker-input) input {
+    color:#fff;
+}
+.custom-date-picker:global(.ant-picker) :global(.anticon){
+    color:#fff;
+}
+/* 自定义Select组件样式 */
+.custom-select:global(.ant-select) :global(.ant-select-selector){
+    background:transparent;
+    color:#fff;
+    border-color:#03a4fe;
+}
+.custom-select:global(.ant-select) :global(.ant-select-arrow) {
+    color:#03a4fe;
+}
+.custom-select:global(.ant-select-multiple) :global(.ant-select-selector) :global(.ant-select-selection-item) {
+    background-color:#03a4fe;
+    border:none;
+}
+.custom-select:global(.ant-select) :global(.ant-select-clear) {
+    background:transparent;
+}
+.custom-select:global(.ant-select) :global(.ant-select-clear) > :global(.anticon) {
+    color:rgba(255, 255, 255, 0.8);
+}
+/* 自定义Input组件样式 */
+.custom-input {
+    background:transparent;
+    border-color:#03a4fe;
+    color:#fff;
+}
+.custom-input:global(.ant-input-affix-wrapper) {
+    background:transparent;
+    border-color:#03a4fe;
+}
+.custom-input:global(.ant-input-affix-wrapper) :global(.ant-input){
+    background-color:transparent;
+    color:#fff;
+}
+.custom-input:global(.ant-input-affix-wrapper) :global(.ant-input-suffix){
+    color:#fff;
+}
+.custom-input:global(.ant-input-number){
+    background-color:transparent;
+    border-color:#03a4fe;
+    color:#fff;
+}
+
+/* 内联flex盒子样式 */
+.inline-flex {
+    margin:10px 0;
+    display:inline-flex;
+    align-items: center;
+}
+
+.temp-container {
+    /* height:32px;
+    line-height:32px; */
+}
+
+.temp-container > span {
+    display:inline-block;
+    border:1px solid #03a4fe;
+    padding:4px 10px;
+}
+
+.temp-container > span:nth-child(1){
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-right:none;
+    color:#03a4fe;
+    cursor: pointer;
+}
+.temp-container > span:nth-child(2){
+    padding:4px 24px;
+}
+.temp-container > span:nth-child(3){
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-left:none;
+    color:#03a4fe;
+    cursor: pointer;
+}
+
+.label-text {
+    display:inline-block;
+    font-size:0.8rem;
+    margin-right:6px;
+    color:rgba(255, 255, 255, 0.8);
+}
+
+.custom-popover:global(.ant-popover) {
+    height:320px;
+    overflow:hidden scroll;
+    background:#fff;
+}
+.custom-popover:global(.ant-popover) :global(.ant-popover-inner-content){
+    padding:0;
+}
+.list-container > div {
+    padding:2px 14px;
+    cursor: pointer;
+}
+.list-container > div.selected {
+    background-color:#03a4fe;
+    color:#fff;
+}
+.list-container > div:hover {
+    background:#ececec;
+}
