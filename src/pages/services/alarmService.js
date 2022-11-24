@@ -2,11 +2,37 @@ import request, { requestImg } from '../utils/request';
 import { translateObj } from '../utils/translateObj';
 import { apiToken } from '../utils/encryption';
 
-export function getAlarmAnalyze(data = {}){
+
+export function getAlarmList(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
-    return request('/iotswitch/warninganalyz', { 
+    return request('/ac/getrecordlist', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+export function getAlarmAnalysis(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/ac/getwarninganalyz', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
+export function getHistoryLog(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/warn/getmachhistorylog', { 
         method:'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -65,18 +91,6 @@ export function confirmRecord(data = {}){
         }); 
 }
 
-export function getHistoryLog(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/warn/getmachhistorylog', { 
-        method:'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
 
 export function getProgressLog(data = {}){
     let token = apiToken();

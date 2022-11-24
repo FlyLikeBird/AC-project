@@ -10,12 +10,8 @@ import moment from 'moment';
 const reg = /\/info_manage_menu\/manual_input\/([^\/]+)\/(\d+)/;
 const companyReg = /\?companyId=(\d*)/;
 const agentReg = /\?agent=(.*)/;
-const agentReg2 = /safe-(.*)/;
-let energyList = [
-    { type_name:'电', type_code:'ele', type_id:'1', unit:'kwh'},
-    { type_name:'水', type_code:'water', type_id:'2', unit:'m³'},
-    { type_name:'气', type_code:'gas', type_id:'3', unit:'m³' }
-];
+const agentReg2 = /ac-(.*)/;
+
 let date = new Date();
 // 初始化socket对象，并且添加监听事件
 function createWebSocket(url, data, companyId, dispatch){
@@ -25,8 +21,7 @@ function createWebSocket(url, data, companyId, dispatch){
         // if ( data.agent_id){
         //     ws.send(`agent:${data.agent_id}`);
         // }
-        ws.send(`switch:${companyId}`);
-        ws.send(`login:${data.user_id}`);
+        ws.send(`energy:${data.user_id}|4`);
        
     };
     // ws.onclose = function(){
@@ -39,16 +34,16 @@ function createWebSocket(url, data, companyId, dispatch){
     };
     ws.onmessage = (e)=>{    
         if ( dispatch ) {   
+            
             if ( e.data === 'offline') {
-                dispatch({ type:'user/loginOut'});
-                notification.open({
-                    message: '下线通知',
-                    description:'该账号已在其他终端登录，您已退出登录',
-                    duration:0,
-                    className:'custom-info'
-                    // icon: <InfoCircleOutlined style={{ color: '#108ee9' }} />
-                });
-                return;
+                // dispatch({ type:'user/loginOut'});
+                // notification.open({
+                //     message: '下线通知',
+                //     description:'该账号已在其他终端登录，您已退出登录',
+                //     duration:0,
+                //     className:'custom-info'
+                // });
+                // return;
             } else {
                 let data = JSON.parse(e.data); 
                 if ( data.type === 'company'){
@@ -163,11 +158,6 @@ export default {
                 let { user: { userInfo, authorized, newThirdAgent }} = yield select();
                 let { dispatch, query, pathname, resolve, reject } = action.payload || {};
                 // 如果是第三方服务商
-                let thirdAgent;
-                if ( localStorage.getItem('third_agent') ){
-                    thirdAgent = JSON.parse(localStorage.getItem('third_agent'));
-                    yield put({ type:'setThirdAgentInfo', payload:{ data:thirdAgent }});
-                }
                 if ( !authorized ){
                     // 判断是否是服务商用户新开的公司标签页
                     let apiHost = '120.25.168.203';     

@@ -22,10 +22,11 @@ function enterFullScreen(el){
         if ( document.documentElement.requestFullscreen ) {
             document.documentElement.requestFullscreen();
         }
+        // let func = el.requestFullscreen || el.msRequestFullscreen || el.mozRequestFullscreen || el.webkitRequestFullscreen ;
+        // if ( func && typeof func === 'function' ) func.call(el);
     } catch(err){
         console.log(err);
     }
-    
 }
 
 function cancelFullScreen(el ){
@@ -71,8 +72,6 @@ function Header({ dispatch, user }){
         ?
         <div ref={containerRef} className={style['container']} style={{ justifyContent:'flex-end', backgroundColor:'#060911', backgroundImage:`url(${headerBg})`, backgroundRepeat:'no-repeat', backgroundSize:'contain' }}>
             <div className={style['weather-container']}>           
-                <AlarmCom msg={msg} />
-                <WeatherCom />
                 {
                     isFulled
                     ?
@@ -84,6 +83,9 @@ function Header({ dispatch, user }){
                         enterFullScreen(document.getElementById('root'));
                     }} />
                 }
+                <AlarmCom msg={msg} />
+                <WeatherCom />
+                
             </div>
         </div>
         :
@@ -116,7 +118,7 @@ function Header({ dispatch, user }){
                     }} />
                     :
                     <FullscreenOutlined style={{ fontSize:'1.4rem', margin:'0 10px' }} onClick={()=>{
-                        enterFullScreen(document.getElementById('root'));
+                        enterFullScreen();
                     }} />
                 }
                 <AlarmCom msg={msg} />

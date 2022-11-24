@@ -70,7 +70,7 @@ function FieldItem({ dispatch, field, theme}){
                                 })
                             }}/>
                             <EditOutlined style={{ flex:'1' }} key="edit" onClick={ () => toggleEditing(true)}/>
-                            {/* <Popconfirm key="del" title="确定要删除吗?" okText="确定" cancelText="取消" onConfirm={()=>{
+                            <Popconfirm key="del" title="确定要删除吗?" okText="确定" cancelText="取消" onConfirm={()=>{
                                 new Promise((resolve, reject)=>{
                                     dispatch({type:'fieldDevice/delete', payload:{ field_id:field.field_id, resolve, reject }})
                                 })
@@ -80,7 +80,7 @@ function FieldItem({ dispatch, field, theme}){
                                 .catch(msg=>{
                                     message.info(msg);
                                 })
-                            }}><CloseOutlined style={{ flex:'1' }} key="delete" /></Popconfirm> */}
+                            }}><CloseOutlined style={{ flex:'1' }} key="delete" /></Popconfirm>
                         </div>
                     }
                 </div>

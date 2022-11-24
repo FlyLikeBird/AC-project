@@ -66,7 +66,7 @@ function SwitchSetter({ dispatch, gateway, controller }){
                         <Button size='small' style={{ backgroundColor:'#359dfd', border:'none', color:'#fff', marginRight:'1rem' }} onClick={()=>{
                             setTplInfo({ visible:true, currentPlan:row });
                         }}><CopyOutlined />复制成模板</Button>
-                        <Popconfirm okText='确定' cancelText='取消' title='确定删除此方案吗' onConfirm={()=>{
+                        <Popconfirm okText='确定' cancelText='取消' title='删除后无法撤回，请谨慎操作，确定删除此方案吗?' onConfirm={()=>{
                             new Promise((resolve, reject)=>{
                                 dispatch({ type:'controller/delPlanSync', payload:{ resolve, reject, plan_id:row.plan_id }})
                             })

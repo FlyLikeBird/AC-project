@@ -98,8 +98,8 @@ function FormContainer({ dispatch, machList, tplList, info, onChangeTpl, onClose
             setSeasonSummer({ work_mode:summerInfo.work_mode, start:moment(`${summerInfo.start.month}-${summerInfo.start.day}`, 'MM-DD'), end:moment(`${summerInfo.end.month}-${summerInfo.end.day}`, 'MM-DD')});
             setSeasonWinter({ work_mode:winterInfo.work_mode, start:moment(`${winterInfo.start.month}-${winterInfo.start.day}`, 'MM-DD'), end:moment(`${winterInfo.end.month}-${winterInfo.end.day}`, 'MM-DD')});
             setSeasonOther(Number(season_other_work_mode));
-            setTempInfo({ temp_enable:Boolean(Number(temp_enable)), temp_high:Number(temp_high), temp_low:Number(temp_low), highVisible:false, lowVisible:false });
-            setCtrlInfo({ disctrl_enable:Boolean(Number(disctrl_enable)), disctrl_from:moment(`${ctrlStartTime.hour}:${ctrlStartTime.minute}`, 'HH:mm'), disctrl_to:moment(`${ctrlEndTime.hour}:${ctrlEndTime.minute}`, 'HH:mm') })
+            setTempInfo({ temp_enable:Boolean(temp_enable), temp_high:Number(temp_high), temp_low:Number(temp_low), highVisible:false, lowVisible:false });
+            setCtrlInfo({ disctrl_enable:Boolean(disctrl_enable), disctrl_from:moment(`${ctrlStartTime.hour}:${ctrlStartTime.minute}`, 'HH:mm'), disctrl_to:moment(`${ctrlEndTime.hour}:${ctrlEndTime.minute}`, 'HH:mm') })
             let weekSumInfo = {};
             weekSumInfo['1'] = JSON.parse(wwi_monday);
             weekSumInfo['2'] = JSON.parse(wwi_tuesday);
@@ -504,23 +504,23 @@ function FormContainer({ dispatch, machList, tplList, info, onChangeTpl, onClose
                             let ctrlEndTime = momentToStr(ctrlInfo.disctrl_to,'HH:mm',':');
                             values['plan_name'] = title;
                             values['ams_enable'] = sumEnable;
-                            values['season_summer'] = { work_mode:seasonSummer.work_mode, start:{ month:seasonSummerStart[0], day:seasonSummerStart[1] }, end:{ month:seasonSummerEnd[0], day:seasonSummerEnd[1] }};
-                            values['season_winter'] = { work_mode:seasonWinter.work_mode, start:{ month:seasonWinterStart[0], day:seasonWinterStart[1]}, end:{ month:seasonWinterEnd[0], day:seasonWinterEnd[1]}};
+                            values['season_summer'] = { work_mode:seasonSummer.work_mode, start:{ month:Number(seasonSummerStart[0]), day:Number(seasonSummerStart[1]) }, end:{ month:Number(seasonSummerEnd[0]), day:Number(seasonSummerEnd[1]) }};
+                            values['season_winter'] = { work_mode:seasonWinter.work_mode, start:{ month:Number(seasonWinterStart[0]), day:Number(seasonWinterStart[1])}, end:{ month:Number(seasonWinterEnd[0]), day:Number(seasonWinterEnd[1]) }};
                             values['season_other_work_mode'] = seasonOther;
                             values['temp_enable'] = tempInfo.temp_enable;
                             values['temp_low'] = tempInfo.temp_low;
                             values['temp_high'] = tempInfo.temp_high;
                             values['disctrl_enable'] = ctrlInfo.disctrl_enable;
-                            values['disctrl_from'] = { hour:ctrlStartTime[0], minute:ctrlStartTime[1] };
-                            values['disctrl_to'] = { hour:ctrlEndTime[0], minute:ctrlEndTime[1] };
+                            values['disctrl_from'] = { hour:Number(ctrlStartTime[0]), minute:Number(ctrlStartTime[1]) };
+                            values['disctrl_to'] = { hour:Number(ctrlEndTime[0]), minute:Number(ctrlEndTime[1]) };
                             Object.keys(weekTimeObj).forEach(week=>{
                                 values[`wwi_${weekEnMaps[week].toLowerCase()}`] = weekTimeObj[week].map(item=>{
                                     let obj = {};
                                     if ( item.on && item.off ){
                                         let startStr = item.on.format('HH:mm').split(':');
                                         let endStr = item.off.format('HH:mm').split(':');
-                                        obj['on'] = { hour:startStr[0], minute:startStr[1] };
-                                        obj['off'] = { hour:endStr[0], minute:endStr[1] };
+                                        obj['on'] = { hour:Number(startStr[0]), minute:Number(startStr[1]) };
+                                        obj['off'] = { hour:Number(endStr[0]), minute:Number(endStr[1]) };
                                     } else {
                                         obj['on'] = null;
                                     }

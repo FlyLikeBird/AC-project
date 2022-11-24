@@ -11,7 +11,7 @@ const MyIcon = createFromIconfontCN({
 // for(var i=0;i<16;i++){
 //     data.push({ key:i, meter_name:'1楼101海信空调', temp:'27.7', time:'23', warning:'test', energy:30 })
 // }
-function ACRoomList({ dispatch, data, isLoading, powerStatus, modeStatus, showMode, currentPage, total  }){
+function ACRoomList({ dispatch, data, isLoading, powerStatus, modeStatus, showMode, currentPage, total, forGroup  }){
     let columns = [
         {
             title:'序号',
@@ -73,23 +73,30 @@ function ACRoomList({ dispatch, data, isLoading, powerStatus, modeStatus, showMo
                 :
                 null
             }
-            <div style={{ height:'60px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid #2a2a33' }}>
-                <div>
-                    <span className={IndexStyle['sub-text']} style={{ marginRight:'6px' }}>状态 : </span>
-                    <Checkbox.Group className={IndexStyle['custom-checkbox']}  options={[{ label:'开机', value:1 }, { label:'关机', value:0 }]} value={powerStatus} onChange={checkedValue=>{
-                        dispatch({ type:'controller/setPowerStatus', payload:checkedValue });
-                    }} />
-                    <span className={IndexStyle['sub-text']} style={{ margin:'0 6px 0 2rem' }}>模式 : </span>
-                    <Checkbox.Group className={IndexStyle['custom-checkbox']}  options={[{ label:'制冷', value:1 }, { label:'制热', value:4 }, { label:'送风', value:3 }]} value={modeStatus} onChange={checkedValue=>{
-                        dispatch({ type:'controller/setModeStatus', payload:checkedValue });
-                    }} />
-                    <Button type='primary' style={{ marginLeft:'1rem'}} onClick={()=>dispatch({ type:'controller/fetchRoomList'})}>查询</Button>
+            {
+                forGroup 
+                ?
+                null
+                :
+                <div style={{ height:'60px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid #2a2a33' }}>
+                    <div>
+                        <span className={IndexStyle['sub-text']} style={{ marginRight:'6px' }}>状态 : </span>
+                        <Checkbox.Group className={IndexStyle['custom-checkbox']}  options={[{ label:'开机', value:1 }, { label:'关机', value:0 }]} value={powerStatus} onChange={checkedValue=>{
+                            dispatch({ type:'controller/setPowerStatus', payload:checkedValue });
+                        }} />
+                        <span className={IndexStyle['sub-text']} style={{ margin:'0 6px 0 2rem' }}>模式 : </span>
+                        <Checkbox.Group className={IndexStyle['custom-checkbox']}  options={[{ label:'制冷', value:1 }, { label:'制热', value:4 }, { label:'送风', value:3 }]} value={modeStatus} onChange={checkedValue=>{
+                            dispatch({ type:'controller/setModeStatus', payload:checkedValue });
+                        }} />
+                        <Button type='primary' style={{ marginLeft:'1rem'}} onClick={()=>dispatch({ type:'controller/fetchRoomList'})}>查询</Button>
+                    </div>
+                    <div>
+                        <span className={IndexStyle['btn'] + ' ' + IndexStyle['opacity'] + ' ' + ( showMode === 'card' ? IndexStyle['selected'] : '')} onClick={()=>dispatch({ type:'controller/toggleShowMode', payload:'card' })}><AppstoreOutlined />视图</span>
+                        <span className={IndexStyle['btn'] + ' ' + IndexStyle['opacity'] + ' ' + ( showMode === 'list' ? IndexStyle['selected'] : '')} onClick={()=>dispatch({ type:'controller/toggleShowMode', payload:'list'})}><UnorderedListOutlined />列表</span>
+                    </div>
                 </div>
-                <div>
-                    <span className={IndexStyle['btn'] + ' ' + IndexStyle['opacity'] + ' ' + ( showMode === 'card' ? IndexStyle['selected'] : '')} onClick={()=>dispatch({ type:'controller/toggleShowMode', payload:'card' })}><AppstoreOutlined />视图</span>
-                    <span className={IndexStyle['btn'] + ' ' + IndexStyle['opacity'] + ' ' + ( showMode === 'list' ? IndexStyle['selected'] : '')} onClick={()=>dispatch({ type:'controller/toggleShowMode', payload:'list'})}><UnorderedListOutlined />列表</span>
-                </div>
-            </div>
+            }
+            
             <div style={{ height:'calc(100% - 60px)', paddingTop:'1rem' }}>
                 {
                     showMode === 'card' 
@@ -100,14 +107,16 @@ function ACRoomList({ dispatch, data, isLoading, powerStatus, modeStatus, showMo
                                 data && data.length 
                                 ?
                                 data.map((item,index)=>(
-                                    <div className={style['list-item-wrapper']} key={index}>
+                                    <div className={style['list-item-wrapper']} style={{ width:forGroup ? '33.3%' : '25%' }} key={index}>
                                         <div className={style['list-item']} onClick={()=>{
-                                            dispatch({ type:'controller/setCurrentRoom', payload:item });
+                                            if ( !forGroup ) {
+                                                dispatch({ type:'controller/setCurrentRoom', payload:item });
+                                            }
                                         
                                         }}>
                                             <div className={style['list-item-title']}>
                                                 <div>
-                                                    <div className={style['list-item-symbol'] + ' ' + ( item.on_off ? style['on'] : style['off']) } style={{ marginRight:'6px' }} >
+                                                    <div className={style['list-item-symbol'] + ' ' + ( item.online_status ?  item.on_off ? style['on'] : style['off'] : style['offline']) } style={{ marginRight:'6px' }} >
                                                         <PoweroffOutlined style={{ fontSize:'1.2rem', color: item.on_off ? '#fff' : '#3c3c51'}} />
                                                     </div>
                                                     { item.meter_name }
@@ -143,13 +152,21 @@ function ACRoomList({ dispatch, data, isLoading, powerStatus, modeStatus, showMo
                                 <div className={IndexStyle['empty-text']}>还没有添加空调设备</div>
                             }
                         </div>
-                        <div className={style['list-footer']}>
-                            <Pagination className={IndexStyle['custom-pagination']} current={currentPage} pageSize={12} total={total} showSizeChanger={false} />
-                        </div>
+                        {
+                            forGroup 
+                            ?
+                            null
+                            :
+                            <div className={style['list-footer']}>
+                                <Pagination className={IndexStyle['custom-pagination']} current={currentPage} pageSize={12} total={total} showSizeChanger={false} />
+                            </div>
+                        }
+                        
                     </div>
                     :
                     <Table
                         className={IndexStyle['self-table-container'] + ' ' + IndexStyle['dark']}
+                        rowKey='detail_id'
                         style={{ padding:'0' }}
                         columns={columns}
                         dataSource={data}

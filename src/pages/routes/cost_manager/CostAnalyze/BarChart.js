@@ -1,31 +1,21 @@
 import React from 'react';
 import ReactEcharts from 'echarts-for-react';
-let pattern = /\s/g;
-// console.log(data);
-let category = [], data1 = [], data2 = [];
-for ( var i=0;i<24;i++){
-    category.push(i);
-    data1.push(Math.round(Math.random() * 4000) );
-    data2.push(Math.round(Math.random() * 23));
-}
 
-function BarChart({ activeKey }){
+function BarChart({ activeKey, data }){
     let textColor = '#b0b0b0';
     let seriesData = [];
     seriesData.push({
         type:'bar',
         barWidth:10,
-        name:'能耗',
+        name: activeKey === 'cost' || activeKey === 'temp' ? '成本' : '能耗',
         itemStyle:{ color:'#04a3fe' },
-        data:data1,
-        yAxisIndex:0,
-        z:4
+        data: activeKey === 'cost' || activeKey === 'temp' ? data.cost : data.energy
     });
     seriesData.push({
         type:'line',
         symbol:'none',
         smooth:true,
-        name:'开机时长',
+        name: activeKey === 'temp' ? '温度' : '开机时长',
         itemStyle:{ color:'#af2aff' },
         lineStyle:{ width:3 },
         areaStyle:{
@@ -42,7 +32,7 @@ function BarChart({ activeKey }){
                 }],
             }
         },
-        data:data2,
+        data: activeKey === 'temp' ? data.temp : data.work,
         yAxisIndex:1
     })
     return (
@@ -53,10 +43,16 @@ function BarChart({ activeKey }){
                 tooltip:{
                     trigger:'axis'
                 },
+                legend:{
+                    left:'center',
+                    top:'20px',
+                    textStyle:{ color:textColor },
+                    data:seriesData.map(i=>i.name)
+                },
                 xAxis: {
                     type: 'category',
                     axisTick:{ show:false },
-                    data:category,
+                    data:data.date,
                     axisLabel:{
                         color:textColor,
                     }
@@ -76,7 +72,6 @@ function BarChart({ activeKey }){
                     axisLabel:{ color:textColor },
                     axisLine:{ show:false },
                     axisTick:{ show:false },
-                    splitNumber:8,
                     splitLine:{
                         show:true,
                         lineStyle:{
@@ -86,14 +81,14 @@ function BarChart({ activeKey }){
                 },
                 {
                     type: 'value',
-                    name:'h',
+                    name: activeKey === 'temp' ? '℃' : 'h',
                     nameTextStyle:{ color:textColor },
                     axisLabel:{ color:textColor },
                     axisLine:{ show:false },
                     axisTick:{ show:false },
-                    splitNumber:8,
+                    minInterval:1,
                     splitLine:{
-                        show:true,
+                        show:false,
                         lineStyle:{
                             color:'#22264b'
                         }
@@ -106,7 +101,7 @@ function BarChart({ activeKey }){
     )
 }
 function areEqual(prevProps, nextProps){
-    if ( prevProps.data !== nextProps.data ){
+    if ( prevProps.data !== nextProps.data || prevProps.activeKey !== nextProps.activeKey ){
         return false;
     } else {
         return true;

@@ -8,7 +8,7 @@ const initialState = {
         { type_name:'气', type_code:'gas', type_id:'3', unit:'m³' },
         { type_name:'热', type_code:'hot', type_id:'4', unit:'GJ' }
     ],
-    energyInfo:{ type_name:'电', type_code:'ele', type_id:'1', unit:'kwh' },
+    energyInfo:{ type_name:'空调', type_code:'dust', type_id:'9', unit:'kwh' },
     // {
     //     'ele':{
     //         fieldList:[],
@@ -90,7 +90,9 @@ export default {
                 }
                 if ( needsUpdate || !(allFields[energyInfo.type_code] && allFields[energyInfo.type_code]['fieldAttrs'] && allFields[energyInfo.type_code]['fieldAttrs'][finalField.field_name] )) {
                     // console.log('b'); 
-                    yield put({type:'toggleTreeLoading'});
+                    if ( !needsUpdate ){
+                        yield put({type:'toggleTreeLoading'});
+                    }
                     let { data } = yield call(getFieldAttrs, { field_id : finalField.field_id });           
                     if ( data && data.code == 0 ){
                         //  以维度属性树的第一个节点为当前属性节点 
@@ -135,7 +137,6 @@ export default {
         },
         getFields(state, { payload:{ data, energyInfo }} ){
             let { fields } = data;
-            fields = fields.filter(i=>i.field_type === 2 );
             let allFields = state.allFields;
             allFields[energyInfo.type_code] = {
                 fieldList:fields

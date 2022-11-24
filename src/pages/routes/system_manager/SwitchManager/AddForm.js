@@ -106,7 +106,7 @@ function AddForm({ info, gatewayList, gatewayId, groupList, ACModel, ACBrand, on
                         </Tooltip>
                     } />
                 </Form.Item>
-                <Form.Item name='port' label='端口号' rules={[{ required:true, message:'请指定终端通道端口号'}]}>
+                {/* <Form.Item name='port' label='端口号' rules={[{ required:true, message:'请指定终端通道端口号'}]}>
                     <InputNumber style={{ width:'100%' }} min={1} max={31} placeholder='端口号取值范围 : 1 ~ 31 ' />
                 </Form.Item>
                 <Form.Item name='baudrate' label='波特率'>
@@ -129,10 +129,10 @@ function AddForm({ info, gatewayList, gatewayId, groupList, ACModel, ACBrand, on
                 </Form.Item>
                 <Form.Item name='passw' label='通信密码'>
                     <Input.Password />
-                </Form.Item>
+                    </Form.Item> */}
                 <Form.Item name='parentAdr' label='所属网关通信地址'>
                     <Input />
-                </Form.Item>
+                </Form.Item> 
                 <Form.Item name='brand' label='空调品牌'>
                     <Select onSelect={()=>{
                         setValue('');

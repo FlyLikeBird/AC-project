@@ -2,11 +2,11 @@ import request from '../utils/request';
 import { translateObj } from '../utils/translateObj';
 import { apiToken } from '../utils/encryption';
 
-export function getBilling(data = {}){
+export function getRateInfo(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
-    return request('/feerate/getratelist', { 
+    return request('/feerate/getrateinfo', { 
         method:'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -15,7 +15,59 @@ export function getBilling(data = {}){
         }); 
 }
 
-export function addBilling(data = {}){
+export function addRate(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/feerate/addrate', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
+export function updateRate(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/feerate/updaterate', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
+export function delRate(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/feerate/delrate', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
+export function getCity(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/feerate/getcity', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
+export function addQuarter(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
@@ -28,7 +80,7 @@ export function addBilling(data = {}){
         }); 
 }
 
-export function editBilling(data = {}){
+export function editQuarter(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
@@ -42,11 +94,11 @@ export function editBilling(data = {}){
 }
 
 
-export function getBillingTpl(data = {}){
+export function getBilling(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
-    return request('/feerate/copytplform', { 
+    return request('/feerate/getratelist', { 
         method:'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -55,20 +107,7 @@ export function getBillingTpl(data = {}){
         }); 
 }
 
-export function copyBillingTpl(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/feerate/copytpl', { 
-        method:'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
-
-export function deleteBilling(data = {}){
+export function delQuarter(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
@@ -107,6 +146,7 @@ export function isUnActive(data = {}){
         }); 
 }
 
+
 export function editRate(data = {}){
     let token = apiToken();
     data.token = token;
@@ -138,6 +178,32 @@ export function setWaterRate(data = {}){
     data.token = token;
     let str = translateObj(data);
     return request('/feerate/setwaterate', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
+export function getTpl(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/feerate/copytplform', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+
+export function applyTpl(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/feerate/copytpl', { 
         method:'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'

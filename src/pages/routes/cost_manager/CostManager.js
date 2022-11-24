@@ -6,15 +6,19 @@ import style from '@/pages/routes/IndexPage.css';
 import ColumnCollapse from '@/pages/components/ColumnCollapse';
 import CostAnalyze from './CostAnalyze';
 import CostTrend from './CostTrend';
+import CostCalendar from './CostCalendar';
 
 let subMenuMaps = {
     'ac_cost_analyze':CostAnalyze,
-    'ac_cost_trend':CostTrend
+    'ac_cost_trend':CostTrend,
+    'ac_cost_calendar':CostCalendar
 };
 
-function CostManager({ dispatch, user, switchMach }){
+function CostManager({ dispatch, user, fields }){
     let { currentMenu } = user;
-    let { gatewayList, gatewayLoading, currentGateway, currentNode, currentSwitch, optionType } = switchMach;
+    let { allFields, currentField, currentAttr, energyInfo, treeLoading } = fields;
+    let fieldList = allFields[energyInfo.type_code] ? allFields[energyInfo.type_code].fieldList : [];
+    let fieldAttrs = allFields[energyInfo.type_code] && allFields[energyInfo.type_code].fieldAttrs ? allFields[energyInfo.type_code]['fieldAttrs'][currentField.field_name] : [];
     const [subMenu, toggleSubMenu] = useState('');
     useEffect(()=>{
         if ( currentMenu.child && currentMenu.child.length ){
@@ -43,23 +47,18 @@ function CostManager({ dispatch, user, switchMach }){
                 </div>
             </div>
             {/* 远程控制菜单，可选择网关或者空开设备 */}
-            {
-                subMenu.menu_code === 'sw_ctrl_remote' 
-                ?
+            
                 <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
                     <div className={style['card-title']}>
-                        <div>网关列表</div>                     
-                        <Button type='primary' size='small' style={{ fontSize:'0.8rem' }} onClick={()=>{
-                            history.push('/sw_system');
-                        }}>添加网关</Button>                   
+                        <div>统计对象</div>                                        
                     </div>
                     <div className={style['card-content']}>
                         {
-                            gatewayLoading
+                            treeLoading
                             ?
                             <Spin className={style['spin']} />
                             :
-                            gatewayList.length 
+                            fieldAttrs.length 
                             ?
                             <Tree
                                 className={style['custom-tree']}
@@ -68,95 +67,26 @@ function CostManager({ dispatch, user, switchMach }){
                                 // onExpand={temp=>{
                                 //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
                                 // }}
-                                selectedKeys={[currentNode.key ]}
-                                treeData={gatewayList}
-                                onSelect={(selectedKeys, { node })=>{  
-                                        // 远程控制功能
-                                        dispatch({ type:'switchMach/toggleNode', payload:node });
-                                        if ( node.is_gateway ) {
-                                            // 如果是网关设备
-                                            if ( node.key !== currentGateway.key ){
-                                                dispatch({ type:'switchMach/toggleGateway', payload:node });
-                                                dispatch({ type:'switchMach/fetchSwitchList' });
-                                                
-                                            }                                            
-                                            if ( optionType === '1'){
-                                                dispatch({ type:'switchMach/fetchSwitchData'});
-                                            } else {
-                                                dispatch({ type:'switchMach/fetchRealtimeData'});
-                                            }                                                             
-                                        } else {
-                                            // 如果是空开设备，则更新空开设备所在的那组网关
-                                            let temp = gatewayList.filter(i=>i.key === node.gateway_id )[0];
-                                            if ( temp && temp.key !== currentGateway.key ){
-                                                dispatch({ type:'switchMach/toggleGateway', payload:temp, updateSwitch:node });
-                                                dispatch({ type:'switchMach/fetchSwitchList' });
-                                            } 
-                                            if ( optionType === '1'){
-                                                dispatch({ type:'switchMach/fetchSwitchData'});
-                                            } else if ( optionType === '2' ){
-                                                dispatch({ type:'switchMach/fetchRealtimeData'});
-                                            }
-                                                          
-                                        }                                                  
+                                selectedKeys={[currentAttr.key]}
+                                treeData={fieldAttrs}
+                                onSelect={(selectedKeys, {node})=>{                                    
+                                    dispatch({ type:'fields/toggleAttr', payload:node });
+                                    if ( subMenu.menu_code === 'ac_cost_analyze') {
+                                        dispatch({ type:'cost/fetchCostAnalysis'});                                                                                                                                           
+                                    }
+                                    if ( subMenu.menu_code === 'ac_cost_trend') {
+                                        dispatch({ type:'cost/fetchCostTrend'});
+                                    }
+                                    if ( subMenu.menu_code === 'ac_cost_calendar') {
+                                        dispatch({ type:'cost/fetchCalendar'});
+                                    }
                                 }}
                             />
                             :
-                            <div>网关列表为空</div>
+                            null
                         }
                     </div>
                 </div>
-                :
-                // 参数设置菜单，只针对空开设备
-                subMenu.menu_code === 'sw_ctrl_trip'
-                ?
-                <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
-                    <div className={style['card-title']}>
-                        <div>网关列表</div>                                    
-                    </div>
-                    <div className={style['card-content']}>
-                        {
-                            gatewayLoading
-                            ?
-                            <Spin className={style['spin']} />
-                            :
-                            gatewayList.length 
-                            ?
-                            <Tree
-                                className={style['custom-tree']}
-                                defaultExpandAll={true}
-                                // expandedKeys={expandedKeys}
-                                // onExpand={temp=>{
-                                //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
-                                // }}
-                                selectedKeys={[currentSwitch.key ]}
-                                treeData={gatewayList}
-                                onSelect={(selectedKeys, { node })=>{                                         
-                                    if ( node.key !== currentSwitch.key ){
-                                        dispatch({ type:'switchMach/toggleSwitch', payload:node });
-                                        // if ( optionType === '1' ){
-                                        //     dispatch({ type:'switchMach/fetchTemp'});
-                                        // } else \
-                                      
-                                        if ( optionType === '1'){
-                                            dispatch({ type:'switchMach/fetchLimitEle'});
-                                        } else if ( optionType === '2'){
-                                            dispatch({ type:'switchMach/fetchAutoTrip'});
-                                        } else if ( optionType === '3'){
-                                            dispatch({ type:'switchMach/fetchAutoCombine'});
-                                        }
-                                    }                                                                                                                                                                   
-                                }}
-                            />
-                            :
-                            <div>网关列表为空</div>
-                        }
-                    </div>
-                </div>
-                :
-                null
-            }
-           
         </div>
         
     );
@@ -167,4 +97,4 @@ function CostManager({ dispatch, user, switchMach }){
     )
 }
 
-export default connect(({ user, switchMach })=>({ user, switchMach }))(CostManager);
+export default connect(({ user, fields })=>({ user, fields }))(CostManager);

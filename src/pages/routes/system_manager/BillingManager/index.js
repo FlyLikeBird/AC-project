@@ -17,13 +17,6 @@ const allTimeType = {
 
 function BillingManager({ dispatch, user }){
     let { companyList, currentCompany, theme } = user;
-    useEffect(()=>{
-        dispatch({ type:'billing/init'});
-        return ()=>{
-            dispatch({ type:'billing/reset'});
-        }
-    },[]);
-    
     return (
        <div className={style['card-container']}>
             <EleBilling />

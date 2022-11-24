@@ -3,7 +3,6 @@ import { Popover, Badge } from 'antd';
 import { history } from 'umi';
 import { createFromIconfontCN, AlertOutlined } from '@ant-design/icons';
 import ScrollTable from '../ScrollTable';
-let firstMsg = true;
 let alarmTimer = null;
 
 const IconFont = createFromIconfontCN({
@@ -28,31 +27,38 @@ function AlarmCom({ msg }){
         // audio.addEventListener('play', ()=>{
         //     console.log('a');
         // })
-       
+        function handleAudio(){
+            setMuted(false);
+            document.onclick = null;  
+        }
+        document.onclick = handleAudio;
         return ()=>{
-            firstMsg = true;
             clearTimeout(alarmTimer);
             alarmTimer = null;
         }
     },[]);
     useEffect(()=>{
-        if ( Object.keys(msg).length ){
-            if ( !firstMsg && !muted ){
-                function run(){   
-                    let audio = document.getElementById('my-audio');
-                    if ( audio ) {
+        let audio = document.getElementById('my-audio');
+        if ( audio ){
+            if ( msg.count ){
+                try {           
+                    if ( !muted ){
                         audio.currentTime = 0;
-                        audio.muted = false;
+                        audio.play(); 
                         alarmTimer = setTimeout(()=>{
-                            audio.muted = true;
-                        },5000);
-                    }  
+                            audio.pause();
+                        },5000)                              
+                    } else {
+                        audio.pause();
+                    }
+                } catch(err){
+                    console.log(err);
                 }
-                run();
-            } 
-            firstMsg = false;
+            } else {
+                if ( audio && audio.pause ) audio.pause();
+            }
         }
-    },[msg])
+    },[msg, muted])
     // console.log(msg);
     let thead = [{ title:'位置', dataIndex:'region_name', width:'20%', collapse:true }, { title:'设备', dataIndex:'mach_name', width:'20%', collapse:true }, { title:'分类', dataIndex:'type_name', width:'25%', border:true }, { title:'发生时间', dataIndex:'date_time', key:'time', width:'35%' }];
 
@@ -62,11 +68,11 @@ function AlarmCom({ msg }){
             }} />
             <Popover color='#1d1e32' content={<div style={{ width:'500px'}}><ScrollTable scrollNum={5} thead={thead} data={ msg.detail || []} /></div>}>
                 <Badge count={msg.count} onClick={()=>{
-                    history.push('/sw_warning');
+                    history.push('/ac_alarm');
                 }} />
             </Popover>
-            <video src="/alarm.mp4"  muted width="420" id="my-audio" style={{ display:'none', right:'0', position:'absolute' }}>
-            </video>
+            <audio src='/alarm.mp3' width="420" id="my-audio" loop style={{ display:'none', right:'0', position:'absolute' }}></audio>
+
             {/* <video id='my-audio' src={AlarmSound} muted={true} autoPlay={true} loop={true} style={{ position:'absolute', left:'100%' }}></video> */}
             <IconFont style={{ fontSize:'1.2rem', margin:'0 10px'}} type={ muted ? 'iconsound-off' : 'iconsound'} onClick={()=>{
                 setMuted(!muted);
@@ -85,4 +91,11 @@ function AlarmCom({ msg }){
     )
 }
 
-export default AlarmCom;
+function areEqual(prevProps, nextProps){
+    if ( prevProps.msg !== nextProps.msg ) {
+        return false;
+    } else {
+        return true;
+    }
+}
+export default React.memo(AlarmCom, areEqual);

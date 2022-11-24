@@ -1,12 +1,12 @@
 import request, { requestImg } from '../utils/request';
 import { translateObj } from '../utils/translateObj';
 import { apiToken } from '../utils/encryption';
-// 极值报表接口
-export function getExtremeReport(data = {}){
+// 获取空调温度报表接口
+export function getTempReport(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
-    return request('/Eleroommonitor/extremumreport', { 
+    return request('/ac/tempreport', { 
         method:'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -14,25 +14,25 @@ export function getExtremeReport(data = {}){
         body:str
         }); 
 }
-// 成本报表接口
+// 获取空调数据报表接口
+export function getEnergyReport(data = {}){
+    let token = apiToken();
+    data.token = token;
+    let str = translateObj(data);
+    return request('/ac/datareport', { 
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body:str
+        }); 
+}
+// 获取空调成本报表接口
 export function getCostReport(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
-    return request('/Eleroommonitor/costreport', { 
-        method:'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body:str
-        }); 
-}
-// 同比报表接口
-export function getSameRate(data = {}){
-    let token = apiToken();
-    data.token = token;
-    let str = translateObj(data);
-    return request('/eleroommonitor/samerate', { 
+    return request('/ac/costreport', { 
         method:'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'

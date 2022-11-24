@@ -13,9 +13,12 @@ let subMenuMaps = {
     'ac_alarm_setting':AlarmSetting,
 };
 
-function AlarmManager({ dispatch, user, switchMach }){
+function AlarmManager({ dispatch, user, fields, alarm }){
     let { currentMenu } = user;
-    let { gatewayList, gatewayLoading, currentNode, currentGateway, currentSwitch } = switchMach;
+    let { selectedKeys } = alarm;
+    let { allFields, currentField, currentAttr, energyInfo, treeLoading } = fields;
+    let fieldList = allFields[energyInfo.type_code] ? allFields[energyInfo.type_code].fieldList : [];
+    let fieldAttrs = allFields[energyInfo.type_code] && allFields[energyInfo.type_code].fieldAttrs ? allFields[energyInfo.type_code]['fieldAttrs'][currentField.field_name] : [];
     const [subMenu, toggleSubMenu] = useState('');
     useEffect(()=>{
         if ( currentMenu.child && currentMenu.child.length ){
@@ -44,16 +47,58 @@ function AlarmManager({ dispatch, user, switchMach }){
                 </div>
             </div>
             {
-                subMenu.menu_code === 'sw_warning_today' || subMenu.menu_code === 'sw_warning_history'
+                subMenu.menu_code === 'ac_alarm_analyze' 
                 ?
-                <div className={style['card-container']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
-                    <div className={style['card-title']}>网关列表</div>
+                <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
+                    <div className={style['card-title']}>
+                        <div>统计对象</div>                                        
+                    </div>
                     <div className={style['card-content']}>
                         {
-                            gatewayLoading
+                            treeLoading
                             ?
                             <Spin className={style['spin']} />
                             :
+                            fieldAttrs.length 
+                            ?
+                            <Tree
+                                className={style['custom-tree']}
+                                defaultExpandAll={true}
+                                checkable
+                                // expandedKeys={expandedKeys}
+                                // onExpand={temp=>{
+                                //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
+                                // }}
+                                checkedKeys={selectedKeys}
+                                treeData={fieldAttrs}
+                                onCheck={(checkedKeys)=>{
+                                    dispatch({ type:'alarm/select', payload:checkedKeys });
+                                    dispatch({ type:'alarm/fetchAlarmAnalysis'});
+                                }}
+                            />
+                            :
+                            <div></div>
+                        }
+                    </div>
+                </div>
+                :
+                null
+            }
+            {
+                subMenu.menu_code === 'ac_alarm_list'
+                ?
+                <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
+                    <div className={style['card-title']}>
+                        <div>统计对象</div>                                        
+                    </div>
+                    <div className={style['card-content']}>
+                        {
+                            treeLoading
+                            ?
+                            <Spin className={style['spin']} />
+                            :
+                            fieldAttrs.length 
+                            ?
                             <Tree
                                 className={style['custom-tree']}
                                 defaultExpandAll={true}
@@ -61,17 +106,15 @@ function AlarmManager({ dispatch, user, switchMach }){
                                 // onExpand={temp=>{
                                 //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
                                 // }}
-                                selectedKeys={[currentNode.key ]}
-                                treeData={gatewayList}
-                                onSelect={(selectedKeys, {node})=>{ 
-                                    dispatch({ type:'switchMach/toggleNode', payload:node }); 
-                                    if ( subMenu.menu_code === 'sw_warning_today' ) {
-                                        dispatch({ type:'alarm/fetchTodayAlarm' });
-                                    } else if ( subMenu.menu_code === 'sw_warning_history' ){                                       
-                                        dispatch({ type:'alarm/fetchAlarmHistory' });
-                                    }                                                                                               
+                                selectedKeys={[currentAttr.key]}
+                                treeData={fieldAttrs}
+                                onSelect={(selectedKeys, {node})=>{                                    
+                                    dispatch({ type:'fields/toggleAttr', payload:node });
+                                    dispatch({ type:'alarm/fetchAlarmList'});
                                 }}
                             />
+                            :
+                            null
                         }
                     </div>
                 </div>
@@ -89,4 +132,4 @@ function AlarmManager({ dispatch, user, switchMach }){
     
 }
 
-export default connect(({ user, switchMach })=>({ user, switchMach }))(AlarmManager);
+export default connect(({ user, fields, alarm })=>({ user, fields, alarm }))(AlarmManager);

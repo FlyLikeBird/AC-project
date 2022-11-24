@@ -6,24 +6,19 @@ import style from '@/pages/routes/IndexPage.css';
 import ColumnCollapse from '@/pages/components/ColumnCollapse';
 import ACManager from './ACManager';
 import ACSetter from './ACSetter';
-// import TimePlanner from './TimePlanner';
-// import ExecuteRecorder from './ExecuteRecorder';
-// import LimitManager from './LimitManager';
-// import SwitchSetter from './SwitchSetter';
-// import AutoCombine from './AutoCombine';
-// import SwitchController from './SwitchController';
+import ACGroup from './ACGroup';
 
 let subMenuMaps = {
     'ac_control_manager':ACManager,
-    'ac_control_plan':null,
-    'ac_control_params':ACSetter
+    'ac_control_params':ACSetter,
+    'ac_control_grp':ACGroup
 };
 function SmartManager({ dispatch, user, fields, controller }){
     let { currentMenu } = user;
-    let { allFields, currentField, treeLoading } = fields;
-    let { selectedNodes } = controller;
-    let fieldList = allFields['ele'] ? allFields['ele'].fieldList : [];
-    let fieldAttrs = allFields['ele'] && allFields['ele'].fieldAttrs ? allFields['ele']['fieldAttrs'][currentField.field_name] : [];
+    let { allFields, currentField, energyInfo, treeLoading } = fields;
+    let { selectedNodes, roomList, currentRoom, groupTree, currentGroup } = controller;
+    let fieldList = allFields[energyInfo.type_code] ? allFields[energyInfo.type_code].fieldList : [];
+    let fieldAttrs = allFields[energyInfo.type_code] && allFields[energyInfo.type_code].fieldAttrs ? allFields[energyInfo.type_code]['fieldAttrs'][currentField.field_name] : [];
     const [subMenu, toggleSubMenu] = useState('');
     useEffect(()=>{
         if ( currentMenu.child && currentMenu.child.length ){
@@ -55,7 +50,7 @@ function SmartManager({ dispatch, user, fields, controller }){
             </div>
             {/* 远程控制菜单，可选择网关或者空开设备 */}
             {
-                subMenu.menu_code === 'ac_control_manager' 
+                subMenu.menu_code === 'ac_control_manager' && !Object.keys(currentRoom).length 
                 ?
                 <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
                     <div className={style['card-title']}>统计对象</div>
@@ -77,6 +72,14 @@ function SmartManager({ dispatch, user, fields, controller }){
                                 // }}
                                 checkedKeys={selectedNodes}
                                 treeData={fieldAttrs}
+                                onSelect={(selectedKeys, { node })=>{
+                                    let target = roomList.filter(i=>i.attr_id === node.key )[0];
+                                    if ( target ){
+                                        dispatch({ type:'controller/setCurrentRoom', payload:{ mach_id:target.mach_id, attr_id:target.attr_id }});
+                                    } else {
+                                        message.info('该区域没有挂载设备');
+                                    }
+                                }}
                                 onCheck={(checkedKeys)=>{
                                     dispatch({ type:'controller/setSelectedNodes', payload:checkedKeys });
                                     dispatch({ type:'controller/fetchRoomList'});
@@ -90,7 +93,80 @@ function SmartManager({ dispatch, user, fields, controller }){
                 :
                 null
             }
-           
+            {
+                subMenu.menu_code === 'ac_control_manager' && Object.keys(currentRoom).length
+                ?
+                <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
+                    <div className={style['card-title']}>统计对象</div>
+                    <div className={style['card-content']}>
+                        {
+                            treeLoading
+                            ?
+                            <Spin className={style['spin']} />
+                            :
+                            fieldAttrs.length 
+                            ?
+                            <Tree
+                                className={style['custom-tree']}
+                                defaultExpandAll={true}
+                                // expandedKeys={expandedKeys}
+                                // onExpand={temp=>{
+                                //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
+                                // }}
+                                selectedKeys={[currentRoom.attr_id]}
+                                treeData={fieldAttrs}
+                                onSelect={(selectedKeys, { node })=>{
+                                    let target = roomList.filter(i=>i.attr_id === node.key )[0];
+                                    if ( target ){
+                                        dispatch({ type:'controller/setCurrentRoom', payload:{ mach_id:target.mach_id, attr_id:target.attr_id }});
+                                    } else {
+                                        message.info(`${node.title}没有挂载设备`);
+                                    }
+                                }}
+                            />
+                            :
+                            <div></div>
+                        }
+                    </div>
+                </div>
+                :
+                null
+            }
+            {/* 分组控制功能 */}
+            {
+                subMenu.menu_code === 'ac_control_grp' 
+                ?
+                <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
+                    <div className={style['card-title']}>统计对象</div>
+                    <div className={style['card-content']}>
+                        {
+                            
+                            groupTree.length 
+                            ?
+                            <Tree
+                                className={style['custom-tree']}
+                                defaultExpandAll={true}
+                                // expandedKeys={expandedKeys}
+                                // onExpand={temp=>{
+                                //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
+                                // }}
+                                selectedKeys={[currentGroup.key]}
+                                treeData={groupTree}
+                                onSelect={(selectedKeys, { node })=>{
+                                    dispatch({ type:'controller/setCurrentGroup', payload:node });
+                                    dispatch({ type:'controller/fetchGroupMach'});
+                                    dispatch({ type:'controller/fetchTempCtrl'});
+                                }}
+                            />
+                            :
+                            <div>还没有设置分组</div>
+                        }
+                    </div>
+                </div>
+                :
+                null
+            }
+
         </div>
         
     );

@@ -6,7 +6,7 @@ export function getIndexData(data = {}){
     let token = apiToken();
     data.token = token;
     let str = translateObj(data);
-    return request('/iotswitch/home', { 
+    return request('/ac/home', { 
         method:'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'

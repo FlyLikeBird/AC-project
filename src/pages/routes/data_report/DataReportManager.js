@@ -4,28 +4,28 @@ import { history } from 'umi';
 import { Tree, Spin, Menu, Button, message } from 'antd';
 import style from '@/pages/routes/IndexPage.css';
 import ColumnCollapse from '@/pages/components/ColumnCollapse';
+import TempReport from './TempReport';
+import EnergyReport from './EnergyReport';
+import CostReport from './CostReport';
 
 let subMenuMaps = {
-    'ac_report_temp':null,
-    'ac_report_data':null,
+    'ac_report_temp':TempReport,
+    'ac_report_data':EnergyReport,
+    'ac_report_cost':CostReport
 };
-function DataReportManager({ dispatch, user, fields, controller }){
+function DataReportManager({ dispatch, user, fields, dataReport }){
     let { currentMenu } = user;
-    let { allFields, currentField, treeLoading } = fields;
-    let { selectedNodes } = controller;
-    let fieldList = allFields['ele'] ? allFields['ele'].fieldList : [];
-    let fieldAttrs = allFields['ele'] && allFields['ele'].fieldAttrs ? allFields['ele']['fieldAttrs'][currentField.field_name] : [];
+    let { allFields, currentField, energyInfo, treeLoading } = fields;
+    let { selectedKeys } = dataReport;
+    let fieldList = allFields[energyInfo.type_code] ? allFields[energyInfo.type_code].fieldList : [];
+    let fieldAttrs = allFields[energyInfo.type_code] && allFields[energyInfo.type_code].fieldAttrs ? allFields[energyInfo.type_code]['fieldAttrs'][currentField.field_name] : [];
     const [subMenu, toggleSubMenu] = useState('');
     useEffect(()=>{
         if ( currentMenu.child && currentMenu.child.length ){
             toggleSubMenu(currentMenu.child[0]);
         }
     },[currentMenu]);
-    useEffect(()=>{
-        dispatch({ type:'controller/init'});
-    },[])
-    // console.log(fieldAttrs);
-    // console.log(selectedNodes);
+   
     let sidebar = (
         <div>
             <div className={style['card-container'] + ' ' + style['topRadius'] + ' ' + style['float-menu-container']} style={{ padding:'0', height:'auto', paddingBottom:'10px' }}>
@@ -67,11 +67,19 @@ function DataReportManager({ dispatch, user, fields, controller }){
                                 // onExpand={temp=>{
                                 //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
                                 // }}
-                                checkedKeys={selectedNodes}
+                                checkedKeys={selectedKeys}
                                 treeData={fieldAttrs}
                                 onCheck={(checkedKeys)=>{
-                                    dispatch({ type:'controller/setSelectedNodes', payload:checkedKeys });
-                                    // dispatch({ type:'controller/fetchRoomList'});
+                                    dispatch({ type:'dataReport/setSelectedKeys', payload:checkedKeys });
+                                    if ( subMenu.menu_code === 'ac_report_temp') {
+                                        dispatch({ type:'dataReport/fetchTempReport'});
+                                    }
+                                    if ( subMenu.menu_code === 'ac_report_data') {
+                                        dispatch({ type:'dataReport/fetchEnergyReport'});
+                                    }
+                                    if ( subMenu.menu_code === 'ac_report_cost') {
+                                        dispatch({ type:'dataReport/fetchCostReport'});
+                                    }
                                 }}
                             />
                             :
@@ -92,4 +100,4 @@ function DataReportManager({ dispatch, user, fields, controller }){
    
 }
 
-export default connect(({ user, fields, controller })=>({ user, fields, controller }))(DataReportManager);
+export default connect(({ user, fields, dataReport })=>({ user, fields, dataReport }))(DataReportManager);

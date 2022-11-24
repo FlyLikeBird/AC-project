@@ -10,7 +10,7 @@ let btnMaps = {};
 
 
 function RemoteSwitch({ dispatch, user, controller, menu }){
-    let { roomList, currentRoom, isLoading, powerStatus, modeStatus, showMode, currentPage, total } = controller;
+    let { roomList, currentRoom, detailInfo, chartInfo, isLoading, powerStatus, modeStatus, showMode, currentPage, total } = controller;
     let [visible, setVisible] = useState(false);
     useEffect(()=>{
         if ( user.authorized ){
@@ -35,6 +35,9 @@ function RemoteSwitch({ dispatch, user, controller, menu }){
         <ACRoomDetail
             dispatch={dispatch}
             data={currentRoom}
+            detailInfo={detailInfo}
+            chartInfo={chartInfo}
+            isLoading={isLoading}
         />
         :
         <ACRoomList 

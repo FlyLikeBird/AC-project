@@ -7,7 +7,7 @@ function LineChart({ data }){
     let seriesData = [];
     seriesData.push({
         type:'line',
-        name:dataType === 'energy' ? '能耗' : '成本',
+        name:dataType === 'cost' ? '成本' : '能耗',
         symbol:'none',
         itemStyle:{
             color:'#3294d7',
@@ -31,7 +31,8 @@ function LineChart({ data }){
                 }]    
             }
         },
-        data:data[dataType]
+        // data:forCost ? data.cost : data.energy
+        data:data[dataType].map(i=>(+i).toFixed(1))
     })
     return (
         <div style={{ height:'100%'}}>
@@ -67,7 +68,7 @@ function LineChart({ data }){
                     },
                     yAxis: {
                         type: 'value',
-                        name:dataType === 'energy' ? 'kwh' : '元',
+                        name:dataType === 'cost' ? '元' : 'kwh',
                         nameTextStyle:{
                             color:'#b0b0b0'
                         },

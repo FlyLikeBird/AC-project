@@ -10,15 +10,14 @@
 
 /* 侧边栏样式 */
 .sidebar-container {
-    height:calc( 100% - 2rem );
-    border-radius:4px;
+    height:100%;
     position:absolute;
-    top:1rem;
+    top:0;
     left:0;
     /* background-color:#f7f7f7; */
     background-color:#fff;
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
+    /* border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px; */
     margin-right:1rem;
     overflow:hidden auto;
     transition:all 0.3s;

@@ -1,17 +1,27 @@
 import { 
+    getRealtimeInfo,
     getRoomList,
     setACParams, 
     getPlanList, pushPlan, addPlan, updatePlan, delPlan,
-    getTplList, copyPlanToTpl, delTpl
+    getTplList, copyPlanToTpl, delTpl,
+    getGroupTree, getGroupMach, setGroupAC,
+    getTempCtrl, setTempCtrl, cancelTempCtrl
 } from '../services/switchService';
-
+import { getCostAnalysis } from '../services/costService';
 const initialState = {
     currentRoom:{},
+    detailInfo:{},
+    chartInfo:{},
     selectedNodes:[],
     roomList:[],
     isLoading:true,
     powerStatus:[0,1],
     modeStatus:[1,3,4],
+    // 分组控制的树节点
+    groupTree:[],
+    currentGroup:{},
+    // 室温预控状态
+    ctrlInfo:{},
     // card-卡片容器模式  list-列表模式
     showMode:'card',
     currentPage:1,
@@ -52,6 +62,95 @@ export default {
                 yield put({ type:'getRoomListResult', payload:{ data:data.data, currentPage, total:data.count }});
             }
         },
+        *fetchDetailInfo(action, { put, select, call }){
+
+            let { data } = yield call(getRealtimeInfo, { mach_id:action.payload });
+            yield put({ type:'toggleLoading'});
+            if ( data && data.code === '0'){
+                yield put({ type:'getDetailResult', payload:{ data:data.data }});
+            }
+        },
+        *fetchCostAnalysis(action, { call, put, select }){
+            try {
+                let { user:{ company_id, startDate, endDate, timeType }} = yield select();
+                let { attr_id } = action.payload ;
+                let { data } = yield call(getCostAnalysis, { time_type:timeType, begin_date:startDate.format('YYYY-MM-DD'), end_date:endDate.format('YYYY-MM-DD'), company_id, attr_id });
+                if ( data && data.code === '0') {
+                    yield put({ type:'getAnalysisResult', payload:{ data:data.data }});
+                }
+            } catch(err){
+                console.log(err);
+            }
+        },
+        *initGroup(action, { call, put }){
+            yield put.resolve({ type:'fetchGroupTree'});
+            yield put({ type:'fetchGroupMach'});
+            yield put({ type:'fetchTempCtrl'});
+        },
+        *fetchGroupTree(action, { call, select, put }){
+            let { user:{ company_id }} = yield select();
+            let { data } = yield call(getGroupTree, { company_id });
+            if ( data && data.code === '0'){
+                yield put({ type:'getGroupTreeResult', payload:{ data:data.data }});
+            }
+        },
+        *fetchGroupMach(action, { call, select, put }){
+            let { controller:{ currentGroup }} = yield select();
+            if ( currentGroup.id ){
+                yield put({ type:'toggleLoading'});
+                let { data } = yield call(getGroupMach, { grp_id:currentGroup.id });
+                if ( data && data.code === '0'){
+                    yield put({ type:'getRoomListResult', payload:{ data:data.data, currentPage:1, total:data.count }});
+                }
+            } else {
+                
+            }
+        },
+        // 组控制
+        *setGroupAsync(action, { put, select, call }){
+            let { controller:{ currentGroup }} = yield select();
+            if ( currentGroup.id ) {
+                let { resolve, reject, values } = action.payload || {};
+                let { data } = yield call(setGroupAC, { ...values, mach_id:currentGroup.gatewayId, grp:currentGroup.grp });
+                if ( data && data.code === '0'){
+                    yield put({ type:'fetchGroupMach'});
+                    if ( resolve ) resolve();
+                } else {
+                    if ( reject ) reject(data.msg);
+                }
+            }  
+        },
+        // 室温预控任务
+        *fetchTempCtrl(action, { put, call, select }){
+            let { user:{ company_id }, controller:{ currentGroup }} = yield select();
+            if ( currentGroup.id ) {
+                let { data } = yield call(getTempCtrl, { company_id, grp_id:currentGroup.id });
+                if ( data && data.code === '0'){
+                    yield put({ type:'getTempCtrlResult', payload:{ data:data.data }});
+                }
+            }
+        },
+        *setTempCtrlAsync(action, { put, call, select }){
+            let { user:{ company_id }, controller:{ currentGroup }} = yield select();
+            let { temp, resolve, reject } = action.payload;
+            let { data } = yield call(setTempCtrl, { grp_id:currentGroup.id, company_id, temp });
+            if ( data && data.code === '0'){
+                yield put({ type:'fetchTempCtrl'});
+                if ( resolve ) resolve();
+            } else {
+                if ( reject ) reject(data.msg);
+            }
+        },
+        *cancelTempCtrlAsync(action, { put, call, select }){
+            let { user:{ company_id }, controller:{ currentGroup }} = yield select();
+            let { resolve, reject } = action.payload;
+            let { data } = yield call(cancelTempCtrl, { grp_id:currentGroup.id, company_id });
+            if ( data && data.code === '0'){
+                if ( resolve ) resolve();
+            } else {
+                if ( reject ) reject(data.msg);
+            }
+        },
         // 方案状态管理
         *initPlanList(action, { put }){
             yield put.resolve({ type:'gateway/fetchACList'});
@@ -74,19 +173,20 @@ export default {
         },
         *setACSync(action, { put, select, call }){
             try {
-                let { values, resolve, reject } = action.payload || {};
-                let { mach_id, mode, on_off, wind_speed, temp, antifreeze_state } = values;
+                let { mach_id, values, resolve, reject } = action.payload || {};
+                let { status_mode, status_on_off, status_wind_speed, status_temp, status_antifreeze_state } = values;
                 let obj = {};
                 obj.mach_id = mach_id;
-                obj.mode = mode;
-                obj.on_off = on_off;
-                obj.wind_speed = wind_speed;
-                obj.temp = temp;
-                obj.antifreeze_state = antifreeze_state;
+                obj.mode = status_mode;
+                obj.on_off = status_on_off;
+                obj.wind_speed = status_wind_speed;
+                obj.temp = status_temp;
+                obj.antifreeze_state = status_antifreeze_state;
                 let { data } = yield call(setACParams, obj);
                 if ( data && data.code === '0'){
-                    yield put({ type:'updateCurrentRoom', payload:{ data:obj }});
                     if ( resolve && typeof resolve === 'function') resolve();
+                    console.log('a');
+                    yield put({ type:'fetchDetailInfo', payload:mach_id });
                 } else {
                     if ( reject && typeof reject === 'function') reject(data.msg);
                 }
@@ -161,7 +261,8 @@ export default {
             } else {
                 if ( reject && typeof reject === 'function' ) reject(data.msg);
             }
-        }
+        },
+       
     },
     reducers:{
         toggleLoading(state){
@@ -185,17 +286,47 @@ export default {
         setCurrentRoom(state, { payload }){
             return { ...state, currentRoom:payload };
         },
-        updateCurrentRoom(state, { payload:{ data }}){
-            return { ...state };
+        getDetailResult(state, { payload:{ data }}){
+            return { ...state, detailInfo:data, isLoading:false };
+        },
+        getAnalysisResult(state, { payload:{ data }}){
+            return { ...state, chartInfo:data };
         },
         resetDetail(state){
-            return { ...state, currentRoom:{} };
+            return { ...state, currentRoom:{}, detailInfo:{}, chartInfo:{} };
         },
         getPlanListResult(state, { payload:{ data, currentPage, total }}){
             return { ...state, planList:data, currentPage, total, isLoading:false };
         },
         getTplResult(state, { payload:{ data }}){
             return { ...state, tplList:data };
+        },
+        getGroupTreeResult(state, { payload:{ data }}){
+            let temp = {};
+            if ( data.length ){
+                data.forEach(item=>{
+                    item.key = item.id;
+                    item.title = '网关-' + item.title;
+                    item.disabled = true;
+                    if ( item.child && item.child.length ){
+                        item.child.forEach(sub=>{
+                            sub.key = sub.id;
+                            sub.gatewayId = item.id;
+                        });
+                    }
+                    item.children = item.child || [];
+                })
+                if ( data[0].child && data[0].child.length ) {
+                    temp = data[0].child[0];
+                }
+            }
+            return { ...state, groupTree:data, currentGroup:temp };
+        },
+        setCurrentGroup(state, { payload }){
+            return { ...state, currentGroup:payload };
+        },
+        getTempCtrlResult(state, { payload:{ data } }){
+            return { ...state, ctrlInfo:data };
         },
         reset(state){
             return initialState;

@@ -52,20 +52,18 @@ let stylesMap = {
         }],
     },
 } 
-
-function PieChart({ data, title }){
-    data = {
-        'TCL':1646,
-        '格力':1235,
-        '奥克斯':955,
-        '美的':321,
-        '松下':56
-    };
+let statusMaps = {
+    '1':{ text:'未处理', color:'red'},
+    '2':{ text:'跟进中', color:'#04fde7'},
+    '3':{ text:'已处理', color:'#0676cb'},
+    '4':{ text:'挂起', color:'#aadbff'}
+}
+function PieChart({ data, title, forStatus }){
     let seriesData = [];
     let num = 0;
     Object.keys(data).forEach(key=>{
         num += data[key];
-        seriesData.push({ value:data[key], name:key });
+        seriesData.push({ value:data[key], name:forStatus ? statusMaps[key].text : key });
     });
     return (
         <ReactEcharts
@@ -76,17 +74,19 @@ function PieChart({ data, title }){
                     trigger: 'item'
                 },
                 title:{
-                    text:'品牌类型分析',
+                    text:title,
                     left:20,
                     top:20,
                     textStyle:{
                         color:'#fff', fontSize:14
                     }
-                }, 
+                },
                 legend: {
+                    type:'scroll',
                     show:true,
-                    left:'54%',
+                    left:'50%',
                     top:'center',
+                    padding:[20,0],
                     orient:'vertical',
                     data:seriesData.map(i=>i.name),
                     icon:'circle',
@@ -96,25 +96,25 @@ function PieChart({ data, title }){
                         let temp = seriesData.filter(i=>i.name === name)[0];
                         // let temp = findData(name, seriesData);
                         let ratio = num ? (temp.value / num * 100).toFixed(1) : 0.0;
-                        return `{title|${name}}{line|}{value|${temp.value}}{unit|kwh}`
+                        return `{title|${name}}{line|}{value|${temp.value}}{unit|次}`
                     },
                     textStyle:{
                         rich: {
                             title: {
-                                width:60,
+                                width:80,
                                 fontSize: 12,
                                 lineHeight: 24,
                                 color: '#9a9a9a',
                                 align:'left'
                             },
                             line:{
-                                width:100,
+                                width:80,
                                 align:'left',
                                 height:0.5,
                                 backgroundColor:'#9a9a9a'
                             },
                             value: {
-                                width:80,
+                                width:52,
                                 fontSize: 16,
                                 fontWeight:'bold',
                                 align:'right',
@@ -132,9 +132,9 @@ function PieChart({ data, title }){
                 },
                 series:[{
                     type:'pie',
-                    name:title,
+                    // name:title,
                     center:['30%','50%'],
-                    radius: ['56%', '72%'],
+                    radius: ['50%', '66%'],
                     avoidLabelOverlap: false,
                     label:{
                         show:false

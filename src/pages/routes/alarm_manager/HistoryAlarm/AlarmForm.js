@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Row, Col, Input, Upload, Radio, message, Button, Modal, Select, Timeline } from 'antd';
+import { Form, Tabs, Input, Upload, Radio, message, Button, Modal, Select, Timeline } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import style from './AlarmForm.css';
 
 const { TextArea } = Input;
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 function getBase64(file) {
     return new Promise((resolve, reject) => {
@@ -22,8 +23,11 @@ function validator(a,value){
         return Promise.resolve();
     }
 }
-
-function AlarmForm({ info, progressLog, logTypes, onClose, onDispatch }){
+const layout = {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
+};
+function AlarmForm({ dispatch, info, status, cateCode, historyLog, progressLog, logTypes, onClose, onDispatch }){
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState([]);
     const [previewInfo, setPreviewInfo] = useState({});
@@ -80,79 +84,72 @@ function AlarmForm({ info, progressLog, logTypes, onClose, onDispatch }){
         </div>
     );
     return (
-        <div style={{ margin:'20px 0'}}>
-            {
-                info.action_code === '2'  || info.action_code === 'view'
-                ?
-                <Timeline mode='left'>                  
-                    <Timeline.Item label={info.current.first_warning_time}>
-                        <div className={style['progress-container']}>
-                            <div className={style['progress-title']}>开始处理...</div>
-                        </div>
-                    </Timeline.Item>
-                    {
-                        progressLog && progressLog.length
-                        ?
-                        progressLog.map((item,index)=>(
-                            <Timeline.Item label={item.log_date} key={index}>
-                                <div className={style['progress-container']}>
-                                    <div className={style['progress-title']}>{ item.log_type_name }</div>
-                                    <div className={style['progress-content']}>
-                                        <div>{ item.log_desc }</div>
-                                        {
-                                            item.photo.length 
-                                            ?
-                                            <div className={style['img-container']}>
-                                                {
-                                                    item.photo.map(img=>(
-                                                        <div className={style['img-wrapper']} style={{ backgroundImage:`url(${img})`}}></div>
-                                                    ))
-                                                }                                                    
-                                            </div>
-                                            :
-                                            null
-                                        }
-                                    </div>
-                                </div>
-                            </Timeline.Item>
-                        ))
-                        :
-                        null
-                    }
-                </Timeline>
-                :
-                null
-            }
-            {
-                info.action_code === 'view' 
-                ?
-                null 
-                :
-                <Form
-                    form={form}
-                    onFinish={values=>{
-                        new Promise((resolve,reject)=>{            
-                            values.record_id = info.current.record_id;
-                            values.oper_code = info.action_code;
-                            if ( values.photos ){
-                                values.photos = values.photos.fileList.map(item=>item.originFileObj);
-                            } else {
-                                values.photos = [];
-                            }
-                            onDispatch({type:'alarm/confirmRecord', payload:{ resolve, reject, values }}); 
-                        })
-                        .then(()=>onClose())
-                        .catch(msg=>{
-                            message.error(msg);
-
-                        }) 
-                    }}
-                >
-                    <Row gutter={24}>
+        <div>
+            <Tabs defaultActiveKey='1'>
+                {/* 处理进度 */}
+                <TabPane tab='处理进度' key='1'>
+                    <Timeline mode='left' className={style['custom-timeline']}>                  
                         {
-                            info.action_code === '2'
+                            progressLog && progressLog.length
                             ?
-                            <Col span={24}>
+                            progressLog.map((item,index)=>(
+                                <Timeline.Item label={item.log_date} key={index}>
+                                    <div className={style['progress-container']}>
+                                        <div className={style['progress-title']}>{ item.action_user_name + ( item.log_type_name ? '-' : '' ) + ( item.log_type_name || '' ) }</div>
+                                        <div className={style['progress-content']}>
+                                            {/* <div>{ item.log_desc }</div> */}
+                                            <div>{ item.warning_desc }</div>
+                                            {
+                                                item.photo.length 
+                                                ?
+                                                <div className={style['img-container']}>
+                                                    {
+                                                        item.photo.map(img=>(
+                                                            <div className={style['img-wrapper']} style={{ backgroundImage:`url(${img})`}}></div>
+                                                        ))
+                                                    }                                                    
+                                                </div>
+                                                :
+                                                null
+                                            }
+                                        </div>
+                                    </div>
+                                </Timeline.Item>
+                            ))
+                            :
+                            null
+                        }
+                    </Timeline> 
+                    {   
+                        info.action_code === 'view' 
+                        ?
+                        null 
+                        :
+                        <Form
+                            { ...layout }
+                            form={form}
+                            onFinish={values=>{
+                                new Promise((resolve,reject)=>{            
+                                    values.record_id = info.current.record_id;
+                                    values.oper_code = info.action_code;
+                                    values.action_type = '2';
+                                    if ( values.photos ){
+                                        values.photos = values.photos.fileList.map(item=>item.originFileObj);
+                                    } else {
+                                        values.photos = [];
+                                    }
+                                    onDispatch({type:'alarm/confirmRecord', payload:{ resolve, reject, values, company_id:info.current.company_id, cateCode, status }}); 
+                                })
+                                .then(()=>onClose())
+                                .catch(msg=>{
+                                    message.error(msg);
+
+                                }) 
+                            }}
+                        >
+                            {
+                                info.action_code === '2'
+                                ?
                                 <Form.Item label='跟进类型:' name='type_id' rules={[{ validator }]}>
                                     <Select>
                                         {
@@ -166,16 +163,16 @@ function AlarmForm({ info, progressLog, logTypes, onClose, onDispatch }){
                                         }
                                     </Select>
                                 </Form.Item>
-                            </Col>
-                            :
-                            null
-                        }                        
-                        <Col span={24}>
-                            <Form.Item label='执行措施:' name='log_desc' rules={[{ validator }]}>
-                                <TextArea />
+                                :
+                                null
+                            }                        
+                            <Form.Item label='消警:' name='log_desc' >
+                                <Select>
+                                    <Option key='计量' value='计量'>计量</Option>
+                                    <Option key='误报' value='误报'>误报</Option>
+                                    <Option key='测试' value='测试'>测试</Option>
+                                </Select>
                             </Form.Item>
-                        </Col>
-                        <Col span={24}>
                             <Form.Item label='处理凭证:' name='photos'>
                                 <Upload
                                     listType="picture-card"
@@ -183,22 +180,56 @@ function AlarmForm({ info, progressLog, logTypes, onClose, onDispatch }){
                                     onPreview={handlePreview}
                                     onChange={handleChange}
                                     beforeUpload={handleBeforeUpload}
-
                                 >
                                     {
                                         fileList.length >= 4 ? null : uploadButton
                                     }
                                 </Upload>
                             </Form.Item>
-                        </Col>
-
-                        <Col span={24} style={{ textAlign:'center'}}>
-                            <Button type='primary' htmlType='submit'>确定</Button>
-                            <Button onClick={onClose} style={{ marginLeft:'10px'}}>关闭</Button>
-                        </Col>
-                    </Row>
-                </Form>
-            }
+                            <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>
+                                <Button type='primary' htmlType='submit'>确定</Button>
+                                <Button onClick={onClose} style={{ marginLeft:'10px'}}>关闭</Button>
+                            </Form.Item>                          
+                        </Form>
+                    }
+                </TabPane>
+                {/* 历史告警 */}
+                <TabPane tab='历史告警' key='2'>
+                    <Timeline mode='left' className={style['custom-timeline']}>                  
+                        {
+                            historyLog && historyLog.length
+                            ?
+                            historyLog.map((item,index)=>(
+                                <Timeline.Item label={item.log_date} key={index}>
+                                    <div className={style['progress-container']}>
+                                        <div className={style['progress-title']}>{ item.action_user_name + ( item.log_type_name ? '-' : '' ) + ( item.log_type_name || '' ) }</div>
+                                        <div className={style['progress-content']}>
+                                            {/* <div>{ item.log_desc }</div> */}
+                                            <div>{ item.warning_desc }</div>
+                                            {
+                                                item.photo.length 
+                                                ?
+                                                <div className={style['img-container']}>
+                                                    {
+                                                        item.photo.map(img=>(
+                                                            <div className={style['img-wrapper']} style={{ backgroundImage:`url(${img})`}}></div>
+                                                        ))
+                                                    }                                                    
+                                                </div>
+                                                :
+                                                null
+                                            }
+                                        </div>
+                                    </div>
+                                </Timeline.Item>
+                            ))
+                            :
+                            null
+                        }
+                    </Timeline> 
+                </TabPane>
+            </Tabs>
+            
             
             <Modal visible={previewInfo.visible} width='1200px' title={previewInfo.title} footer={null} onCancel={()=>setPreviewInfo({ ...previewInfo, visible:false })}>
                 <img src={previewInfo.img} style={{ width:'100%'}} />

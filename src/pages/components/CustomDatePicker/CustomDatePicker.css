@@ -1,6 +1,6 @@
 .container {
     height:32px;
-    margin:1rem;
+    /* margin:1rem; */
 }
 
 .radio-container {
@@ -12,6 +12,7 @@
     border:1px solid #0b6fb1;
     color:#fff;
     margin-left:-1px;
+    box-shadow:none !important;
 }
 
 .radio-container:global(.ant-radio-group) :global(.ant-radio-button-wrapper)::before {

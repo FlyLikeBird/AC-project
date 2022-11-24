@@ -15,9 +15,9 @@
 
 .border-container-vertical {
     position:absolute;
-    left:1rem;
+    left:0.5rem;
     width:1px;
-    top:1rem;
+    top:2rem;
     height:calc( 100% - 4rem);
     border:14px solid transparent;
 }
@@ -25,16 +25,16 @@
     position:absolute;
     left:1rem;
     width:calc( 100% - 2rem );
-    bottom:-6px;
+    bottom:-4px;
     height:1px;
     border:14px solid transparent;
 }
 .float-container {
     position:absolute;
-    top:1rem;
+    top:2rem;
     bottom:2rem;
     right:1rem;
-    width:27%;
+    width:24%;
     background-color:rgba(0, 0, 0, 0.7);
 }
 .float-container > .float-item {
@@ -51,6 +51,7 @@
     border-top:3px solid #2f7dc0;
     padding:0 0.5rem;
     background:#0a2645;
+    font-size:1rem;
 }
 
 .float-item > .float-item-title > .float-item-icon {
@@ -61,7 +62,7 @@
     margin-right:6px;
 }
 .float-item > .float-item-title > .title {
-    font-size:1.1rem;
+    font-size:1rem;
     /* font-weight:bold; */
     color:#fff;
 }
@@ -84,30 +85,55 @@
     background-color:#3294d7;
 }
 
-/* 地图信息框样式 */
+.symbol {
+    position:absolute;
+    width:6px;
+    height:6px;
+    background-color:#ccc;
+    left:-16px;
+}
+
+/* 地图自定义信息框样式 */
 .info-container {
-    border:1px solid #f30d0d;
-    background-color:rgba(0,0,0,0.5);
-    padding:10px;
-    color:#fff;
-    font-size:1rem;
+    border:1px solid #23b9f8;
+    background:rgba(0, 0, 0, 0.65);
     border-radius:6px;
+    padding:0.5rem 1rem;
+    width:200px;
+    position:absolute;
+    z-index:150;
 }
 
 .info-container .info-title {
-    background-color:#f30d0d;
-    border-radius:4px;
+    font-size:1rem;
+    color:#fff;
     text-align: center;
-    font-weight:bold;
+    margin:6px 0;
 }
 
-.info-container .info-sub-text {
-    color:#848893;
-    font-size:0.8rem;
+.info-container .info-content {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
 }
-.spin:global(.ant-spin) {
-    position:absolute;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
+
+.info-container .data {
+    font-size:1.4rem;
+    font-weight:bold;
+    line-height: 1.4rem;
+    color:#1fa0ea;
+}
+.info-container .unit {
+    font-size:0.8rem;
+    color:#1fa0ea;
+    margin:0 4px;
+}
+.info-container .btn, .info-container-2 .btn {
+    padding:2px 6px;
+    border-radius:4px;
+    background:#1fa0ea;
+    color:#fff;
+    font-size:0.8rem;
+    margin:6px 0;
+    cursor: pointer;
 }

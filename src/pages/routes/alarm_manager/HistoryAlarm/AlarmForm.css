@@ -67,7 +67,25 @@
     height:100px;
     padding-right:10px;
     background-repeat: no-repeat;
-    background-size:cover;
+    background-size:contain;
     border-radius:4px;
+}
+
+.form-container {
+
+}
+
+.custom-timeline:global(.ant-timeline) :global(.ant-timeline-item-label) {
+    width:calc(30% - 12px);
+}
+.custom-timeline:global(.ant-timeline) :global(.ant-timeline-item-tail) {
+    left:32%;
+}
+.custom-timeline:global(.ant-timeline) :global(.ant-timeline-item-head) {
+    left:32%;
+}
+.custom-timeline:global(.ant-timeline) :global(.ant-timeline-item-content) {
+    left:calc(32% - 4px) !important;
+    width:auto !important;
 }
 

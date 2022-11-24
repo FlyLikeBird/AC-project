@@ -54,18 +54,11 @@ let stylesMap = {
 } 
 
 function PieChart({ data, title }){
-    data = {
-        'TCL':1646,
-        '格力':1235,
-        '奥克斯':955,
-        '美的':321,
-        '松下':56
-    };
     let seriesData = [];
     let num = 0;
-    Object.keys(data).forEach(key=>{
-        num += data[key];
-        seriesData.push({ value:data[key], name:key });
+    data.forEach(item=>{
+        num += +item.totalEnergy;
+        seriesData.push({ value:(+item.totalEnergy).toFixed(1), name:item.brand_name });
     });
     return (
         <ReactEcharts
@@ -85,8 +78,10 @@ function PieChart({ data, title }){
                 }, 
                 legend: {
                     show:true,
-                    left:'54%',
+                    type:'scroll',
+                    left:'50%',
                     top:'center',
+                    padding:[20,0],
                     orient:'vertical',
                     data:seriesData.map(i=>i.name),
                     icon:'circle',
@@ -95,26 +90,26 @@ function PieChart({ data, title }){
                     formatter:(name)=>{
                         let temp = seriesData.filter(i=>i.name === name)[0];
                         // let temp = findData(name, seriesData);
-                        let ratio = num ? (temp.value / num * 100).toFixed(1) : 0.0;
+                        // let ratio = num ? (temp.value / num * 100).toFixed(1) : 0.0;
                         return `{title|${name}}{line|}{value|${temp.value}}{unit|kwh}`
                     },
                     textStyle:{
                         rich: {
                             title: {
-                                width:60,
+                                width:80,
                                 fontSize: 12,
                                 lineHeight: 24,
                                 color: '#9a9a9a',
                                 align:'left'
                             },
                             line:{
-                                width:100,
+                                width:80,
                                 align:'left',
                                 height:0.5,
                                 backgroundColor:'#9a9a9a'
                             },
                             value: {
-                                width:80,
+                                width:52,
                                 fontSize: 16,
                                 fontWeight:'bold',
                                 align:'right',
@@ -134,10 +129,26 @@ function PieChart({ data, title }){
                     type:'pie',
                     name:title,
                     center:['30%','50%'],
-                    radius: ['56%', '72%'],
+                    radius: ['50%', '66%'],
                     avoidLabelOverlap: false,
                     label:{
-                        show:false
+                        show:true,
+                        position:'center',
+                        formatter:(params)=>{
+                            return `{a|${num.toFixed(1)} kwh}\n{b|总能耗}`
+                        },
+                        rich:{
+                            'a':{
+                                color:'#fff',
+                                fontSize:16,
+                                padding:[0,4,0,0]                                
+                            },
+                            'b':{
+                                color:'#9a9a9a',
+                                fontSize:12,
+                                padding:[6,0,6,0]
+                            }
+                        }
                     },
                     labelLine:{
                         show:false

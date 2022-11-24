@@ -61,12 +61,12 @@ function ColumnCollapse({ sidebar, content, user, mode }){
     },[]);
     return (
         <div className={ mode === 'dark' || theme === 'dark' ? style['container'] + ' ' + style['dark'] : style['container']}>
-            <div style={{ width: width + 'px', marginRight: hidden ? '0' : padding + 'px', left:padding + 'px' }} className={style['sidebar-container']} >
+            <div style={{ width: width + 'px', marginRight: hidden ? '0' : padding + 'px'}} className={style['sidebar-container']} >
                 {  sidebar }
                 <div className={style['flex-pointer']} ref={pointerRef} style={{ left:`${padding + width - 6 }px` }}></div>             
             </div>
             
-            <div className={style['content-container']} style={{ left: padding + width + ( hidden ? 0 : padding ) + 'px', width:`calc( 100% - ${width + padding * 2 + ( hidden ? 0 : padding )}px)` }}>
+            <div className={style['content-container']} style={{ left: width + ( hidden ? 0 : padding ) + 'px', width:`calc( 100% - ${width + padding  + ( hidden ? 0 : padding )}px)` }}>
                 { content }
                 {
                     hidden
@@ -76,7 +76,7 @@ function ColumnCollapse({ sidebar, content, user, mode }){
                         onClick={()=>setWidth( containerWidth <= 1440 ? 200 : 250 )} 
                         style={{ 
                             position:'fixed', 
-                            left: '1rem'
+                            left: '0'
                         }}>
                         <DoubleRightOutlined />
                     </div>

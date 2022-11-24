@@ -1,14 +1,15 @@
 import { 
-    getAlarmAnalyze, getTodayAlarm, 
+    getAlarmList, getAlarmAnalysis,
+    getTodayAlarm, getHistoryLog,
     getAlarmHistory,  getLogType, confirmRecord, getProgressLog, uploadImg,
     getMachs, 
     getRuleList, getRuleType, addRule, updateRule, deleteRule 
 } from '../services/alarmService';
 const initialState = {
-    sumAlarm:{},
-    todayAlarm:{},
-    sourceData:[],
+    selectedKeys:[],
     isLoading:true,
+    chartInfo:{},
+    sourceData:[],
     currentPage:1,
     total:0,
     cateCode:'0',
@@ -32,43 +33,57 @@ export default {
             })
         },
         // 统一取消所有action
-        *cancelAll(action, { put }){
-            console.log('all');
-           
+        *cancelAll(action, { put }){           
             yield put({ type:'reset'});
         },
-        *fetchAlarmSum(action, { call, put, select }){        
-            try {
-                let { user:{ company_id }} = yield select();
-                let { data } = yield call(getAlarmAnalyze,  { company_id });
-                if ( data && data.code === '0'){
-                    yield put({ type:'getAlarmAnalyze', payload:{ data:data.data }});
-                }                      
-                 
-            } catch(err){
-                console.log(err);
-            }  
+        *initAlarmList(action, { put }){
+            yield put.resolve({ type:'fields/init'});
+            yield put({ type:'user/toggleTimeType', payload:'2'});
+            yield put({ type:'fetchLogType'});
+            yield put({ type:'fetchAlarmList'});
         },
-        *initTodayAlarm(action, { call, put }){
-            yield put.resolve({ type:'switchMach/fetchGateway'})
-            yield put.resolve({ type:'fetchTodayAlarm'});
-        },
-        *fetchTodayAlarm(action, { call, put, select }){
+        *fetchAlarmList(action, { put, select, call }){
             try {
-                let { user:{ company_id, startDate, endDate }, switchMach:{ currentNode }, alarm:{ cateCode }} = yield select();
-                let params = {};
-                params.company_id = company_id;
-                params.cate_code = cateCode;
-                params.begin_date = startDate.format('YYYY-MM-DD');
-                params.end_date = endDate.format('YYYY-MM-DD'); 
-                if ( currentNode.is_gateway ) {
-                    params.gateway_id = currentNode.key;
-                } else {
-                    params.mach_id = currentNode.key;
+                let { user:{ timeType, startDate, endDate, company_id }, fields:{ currentAttr }} = yield select();
+                let { page, status, cateCode } = action.payload || {};
+                page = page || 1;
+                let obj = { company_id, attr_id:currentAttr.key, begin_date:startDate.format('YYYY-MM-DD'), end_date:endDate.format('YYYY-MM-DD'), page, pagesize:14 };
+                // 中台账号
+                if ( status ){
+                    obj['status'] = status;
                 }
-                let { data } = yield call(getTodayAlarm, params);
-                if ( data && data.code === '0') {
-                    yield put({ type:'getTodayAlarm', payload:{ data:data.data }});
+                if ( cateCode ) {
+                    obj['cate_code'] = cateCode;
+                }
+                yield put({ type:'toggleLoading'});
+                let { data } = yield call(getAlarmList, obj);
+                if ( data && data.code === '0'){
+                    yield put({ type:'getAlarmListResult', payload:{ data:data.data, currentPage:page, total:data.count }});
+                }
+            } catch(err){
+        
+            }
+        },
+        *initAlarmAnalysis(action, { put, select }){
+            yield put.resolve({ type:'fields/init'});
+            let { fields:{ allFields, energyInfo, currentAttr, fieldAttrs }} = yield select();
+            let temp = [];
+            if ( currentAttr.children && currentAttr.children.length ) {
+                temp.push(currentAttr.key);
+                currentAttr.children.map(i=>temp.push(i.key));
+            } else {
+                temp.push(currentAttr.key);
+            }
+            yield put({ type:'select', payload:temp });
+            yield put({ type:'fetchAlarmAnalysis'});
+        },
+        *fetchAlarmAnalysis(action, { put, call, select }){
+            try {
+                let { user:{ timeType, startDate, endDate, company_id }, alarm:{ selectedKeys }} = yield select();
+                yield put({ type:'toggleLoading'});
+                let { data } = yield call(getAlarmAnalysis, { attrs:selectedKeys, company_id, time_type:timeType, begin_date:startDate.format('YYYY-MM-DD'), end_date:endDate.format('YYYY-MM-DD')});
+                if ( data && data.code === '0'){
+                    yield put({ type:'getAnalysisResult', payload:{ data:data.data }});
                 }
             } catch(err){
                 console.log(err);
@@ -110,12 +125,18 @@ export default {
                 let { data } = yield call(confirmRecord, { company_id, record_id:values.record_id, photos:uploadPaths, log_desc:values.log_desc, oper_code:values.oper_code, type_id:values.type_id });                 
                 if ( data && data.code === '0'){
                     resolve();
-                    yield put({ type:'fetchAlarmHistory'});
+                    yield put({ type:'fetchAlarmList'});
                 } else {
                     reject(data.msg);
                 }
             } catch(err){
                 console.log(err);
+            }
+        },
+        *fetchHistoryLog(action, { call, put }){
+            let { data } = yield call(getHistoryLog, { mach_id:action.payload });
+            if ( data && data.code === '0'){
+                yield put({ type:'getHistoryResult', payload:{ data:data.data }});
             }
         },
         *fetchAlarmHistory(action, { call, put, select }){
@@ -232,8 +253,17 @@ export default {
         toggleLoading(state){
             return { ...state, isLoading:true };
         },
+        getAlarmListResult(state, { payload :{ data }}){
+            return { ...state, sourceData:data, isLoading:false };
+        },
         getAlarmAnalyze(state, { payload:{ data }}){
             return { ...state, sumAlarm:data };
+        },
+        getAnalysisResult(state, { payload :{ data }}){
+            return { ...state, chartInfo:data, isLoading:false };
+        },
+        getHistoryResult(state, { payload:{ data }}){
+            return { ...state, historyLog:data };
         },
         getTodayAlarm(state, { payload:{ data }}){
             return { ...state, todayAlarm:data };
@@ -261,6 +291,9 @@ export default {
         },
         setPage(state, { payload }){
             return { ...state, currentPage:payload };
+        },
+        select(state, { payload }){
+            return { ...state, selectedKeys:payload };
         },
         reset(state){
             return initialState;
