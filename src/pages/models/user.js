@@ -7,14 +7,13 @@ import config from '../../../config';
 import { md5, encryptBy, decryptBy } from '../utils/encryption';
 import moment from 'moment';
 
-const reg = /\/info_manage_menu\/manual_input\/([^\/]+)\/(\d+)/;
-const companyReg = /\?companyId=(\d*)/;
+const companyReg =  /\?pid\=0\.\d+&&userId=(\d+)&&companyId=(\d+)&&mode=(\w+)/;
 const agentReg = /\?agent=(.*)/;
 const agentReg2 = /ac-(.*)/;
 
 let date = new Date();
 // 初始化socket对象，并且添加监听事件
-function createWebSocket(url, data, companyId, dispatch){
+function createWebSocket(url, data, companyId, fromAgent, dispatch){
     let ws = new WebSocket(url);
     // console.log(data);
     ws.onopen = function(){
@@ -66,20 +65,7 @@ function reconnect(url, data, companyId, dispatch){
     },2000)
 }
 let socket = null;
-let menu = [
-    { menu_code:'home', menu_name:'平台首页'},
-    { menu_code:'terminal_monitor', menu_name:'终端监控'},
-    { menu_code:'smart_manager', menu_name:'智能控制'},
-    { menu_code:'realtime_data', menu_name:'实时数据'},
-    { menu_code:'alarm_manager', menu_name:'故障警报' },
-    { menu_code:'sys_manager', menu_name:'系统管理' },
-    // { menu_code:'img_ceshi', menu_name:'测试图像自适应属性'}
-    // { menu_code:'data_report', menu_name:'数据管理'},
-    // { menu_code:'draw_mach', menu_name:'拟态图锚点'}
-    // { menu_code:'map_test', menu_name:'高德地图测试' },
-    // { menu_code:'mtl_test', menu_name:'模型材质测试'},
-    // { menu_code:'topology_test', menu_name:'拓扑图'}
-];
+
 const initialState = {
     userInfo:{},
     userMenu:[],
@@ -116,7 +102,8 @@ const initialState = {
     startDate:moment(date),
     endDate:moment(date),
     timeType:'1',
-    AMap:null
+    AMap:null,
+    isFrame:false
 };
 export default {
     namespace:'user',
@@ -160,16 +147,15 @@ export default {
                 // 如果是第三方服务商
                 if ( !authorized ){
                     // 判断是否是服务商用户新开的公司标签页
-                    let apiHost = '120.25.168.203';     
                     let matchResult = companyReg.exec(query);
-                    let companysMap = JSON.parse(localStorage.getItem('companysMap'));
-                    let defaultCompany, defaultCompanyId;
-                    if ( companysMap && companysMap.length ){
-                        defaultCompany = companysMap[0];
-                        defaultCompanyId = defaultCompany[Object.keys(defaultCompany)[0]];
+                    let company_id = matchResult ? matchResult[2] : null;
+                    let user_id = matchResult ? matchResult[1] : null;
+                    let fromAgent = matchResult ? true : false;
+                    let isFrame = matchResult && matchResult[3] === 'frame' ? true : false;
+                    if ( user_id ){
+                        localStorage.setItem('user_id', user_id);
                     }
-                    let company_id = matchResult ? matchResult[1] : defaultCompanyId;
-                    let { data } = yield call( matchResult ? agentUserAuth : userAuth, { app_type:'4'});
+                    let { data } = yield call( matchResult ? agentUserAuth : userAuth, matchResult ? { app_type:'4', company_id } : { app_type:'4' });
                     if ( data && data.code === '0' ){
                         // 先判断是否是第三方代理商账户
                         if ( !Object.keys(newThirdAgent).length ) {
@@ -178,7 +164,7 @@ export default {
                             let temp = matchResult ? matchResult[1] : '';
                             yield put({ type:'fetchNewThirdAgent', payload:temp });
                         }
-                        yield put({type:'setUserInfo', payload:{ data:data.data, company_id, pathname, fromAgent:matchResult ? true : false } });
+                        yield put({type:'setUserInfo', payload:{ data:data.data, company_id, pathname, fromAgent, isFrame } });
                         yield put({ type:'setContainerWidth' });
                         yield put({type:'weather'});
                         if ( resolve && typeof resolve === 'function') resolve();
@@ -187,7 +173,9 @@ export default {
                             window.alert('当前浏览器不支持websocket,推荐使用chrome浏览器');
                             return ;
                         }
-                        socket = createWebSocket(`ws://${apiHost}:${config.socketPort}`, data.data, company_id, dispatch);
+                        let config = window.g;
+                        let socketCompanyId = company_id ? company_id : data.data.companys.length ? data.data.companys[0].company_id : null ;
+                        socket = createWebSocket(`ws://${config.socketHost}:${config.socketPort}`, data.data, socketCompanyId, matchResult, dispatch);
                     } else {
                         // 登录状态过期，跳转到登录页重新登录(特殊账号跳转到特殊登录页)
                         yield put({ type:'loginOut'});
@@ -316,10 +304,11 @@ export default {
         }
     },
     reducers:{
-        setUserInfo(state, { payload:{ data, company_id, pathname, fromAgent }}){
+        setUserInfo(state, { payload:{ data, company_id, pathname, fromAgent, isFrame }}){
             let { menuData, companys } = data;
             let currentCompany = company_id ? companys.filter(i=>i.company_id == company_id)[0] : companys[0];
-            return { ...state, userInfo:data, userMenu:menuData, companyList:companys || [], company_id:currentCompany.company_id, currentCompany, fromAgent, authorized:true };
+            let routePath = menuData.map(i=>i.menu_code);
+            return { ...state, userInfo:data, userMenu:menuData, routePath, companyList:companys || [], company_id:currentCompany.company_id, currentCompany, fromAgent, authorized:true, isFrame };
         },
         setRoutePath(state, { payload:{ pathname }}){
             let currentMenu;

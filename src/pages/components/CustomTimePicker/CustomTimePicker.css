@@ -1,0 +1,82 @@
+.container {
+    display:inline-block;
+    position:relative;
+}
+.input-container {
+    display:inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    background:#fff;
+    border-radius:4px;
+    padding:0.4rem 1rem;
+    width:180px;
+}
+.input-container .clock-btn {
+    color:rgba(255, 255, 255, 0.45);
+}
+.input-container .close-btn {
+    display:none;
+    color:rgba(255, 255, 255, 0.45)
+}
+.input-container:hover .clock-btn{
+    display:none;
+}
+.input-container:hover .close-btn{
+    display:inline-block;
+}
+
+.container.opacity .input-container {
+    background:transparent;
+    border:1px solid #1b8ffe;
+}
+.time-container {
+    height:300px;
+    display:flex;
+    background:#fff;
+    position:absolute;
+    transition: all 0.3s ;
+    top:46px;
+    z-index: 2;
+    color:rgba(0, 0, 0, 0.85);
+}
+
+.time-container .arrow {
+    position: absolute;
+    top:-12px;
+    left:14px;
+    width: 10px;
+    height: 10px;
+    border: 6px solid #f0f0f0;
+    border-color: transparent transparent #fff transparent;
+}
+.time-container .time-list {
+    height:100%;
+}
+.time-list .time-list-title {
+    height:2rem;
+    line-height:2rem;
+    background:#f7f7f7;
+    padding:0.5rem 1rem;
+    white-space:nowrap;
+}
+.time-list .time-list-content {
+    height:calc( 100% - 2rem);
+    overflow:hidden;
+}
+.time-list .time-list-content:hover {
+    overflow: hidden scroll;
+}
+.time-list .time-item {
+    padding:0.5rem 1rem;
+    cursor: pointer;
+}
+.time-list .time-item.selected {
+    background: #f5f5f5;
+}
+.time-list .time-item:hover {
+    background-color:#f5f5f5;
+}
+.time-list .time-item.disabled {
+    background:#ccc;
+    cursor:not-allowed;
+}

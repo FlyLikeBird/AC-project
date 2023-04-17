@@ -6,16 +6,20 @@ import style from '@/pages/routes/IndexPage.css';
 import ColumnCollapse from '@/pages/components/ColumnCollapse';
 import ACManager from './ACManager';
 import ACSetter from './ACSetter';
+import PlanHistory from './PlanHistory';
+import PlanManager from './PlanManager';
 import ACGroup from './ACGroup';
 
 let subMenuMaps = {
     'ac_control_manager':ACManager,
+    // 'ac_control_params':PlanManager,
     'ac_control_params':ACSetter,
+    'ac_control_log':PlanHistory,
     'ac_control_grp':ACGroup
 };
 function SmartManager({ dispatch, user, fields, controller }){
     let { currentMenu } = user;
-    let { allFields, currentField, energyInfo, treeLoading } = fields;
+    let { allFields, currentField, energyInfo, currentAttr, treeLoading } = fields;
     let { selectedNodes, roomList, currentRoom, groupTree, currentGroup } = controller;
     let fieldList = allFields[energyInfo.type_code] ? allFields[energyInfo.type_code].fieldList : [];
     let fieldAttrs = allFields[energyInfo.type_code] && allFields[energyInfo.type_code].fieldAttrs ? allFields[energyInfo.type_code]['fieldAttrs'][currentField.field_name] : [];
@@ -126,6 +130,48 @@ function SmartManager({ dispatch, user, fields, controller }){
                             />
                             :
                             <div></div>
+                        }
+                    </div>
+                </div>
+                :
+                null
+            }
+            {/* 控制方案功能 */}
+            {
+                subMenu.menu_code === 'ac_control_params' || subMenu.menu_code === 'ac_control_log'
+                ?
+                <div className={style['card-container'] + ' ' + style['bottomRadius']} style={{ padding:'0', height:'auto', boxShadow:'none' }}>
+                    <div className={style['card-title']}>
+                        <div>统计对象</div>                                        
+                    </div>
+                    <div className={style['card-content']}>
+                        {
+                            treeLoading
+                            ?
+                            <Spin className={style['spin']} />
+                            :
+                            fieldAttrs.length 
+                            ?
+                            <Tree
+                                className={style['custom-tree']}
+                                defaultExpandAll={true}
+                                // expandedKeys={expandedKeys}
+                                // onExpand={temp=>{
+                                //     dispatch({ type:'fields/setExpandedKeys', payload:temp });
+                                // }}
+                                selectedKeys={[currentAttr.key]}
+                                treeData={fieldAttrs}
+                                onSelect={(selectedKeys, {node})=>{                                    
+                                    dispatch({ type:'fields/toggleAttr', payload:node });
+                                    if ( subMenu.menu_code === 'ac_control_params') {
+                                        dispatch({ type:'plan/fetchPlanList'});
+                                    } else {
+                                        dispatch({ type:'plan/fetchLogList'});
+                                    }
+                                }}
+                            />
+                            :
+                            null
                         }
                     </div>
                 </div>
